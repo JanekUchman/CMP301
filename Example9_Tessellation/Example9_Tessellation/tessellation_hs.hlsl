@@ -5,7 +5,8 @@ cbuffer TessellationBuffer : register(b0)
 	float tessellationFactor;
 	float tessEdge;
 	float tessInside;
-	float padding;
+    float3 cameraPos;
+    float2 padding;
 };
 
 struct InputType

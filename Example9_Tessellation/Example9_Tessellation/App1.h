@@ -28,6 +28,7 @@ private:
 	int maxTess = 64;
 	int tessEdge = 2;
 	int tessInside = 3;
+	int tessBasedOnDistance;
 
 };
 
