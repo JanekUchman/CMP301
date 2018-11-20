@@ -50,7 +50,7 @@ void main(triangle InputType input[3], inout TriangleStream<OutputType> triStrea
 {
 	OutputType output;
 
-	float4 g_positions[3] =
+	float4 g_positions[4] =
 	{
 	float4(-1, 1, 0, 0),
 	float4(-1, -1, 0, 0),
