@@ -75,7 +75,7 @@ bool App1::render()
 
 	// Send geometry data, set shader parameters, render object with shader
 	tessQuad->sendData(renderer->getDeviceContext());
-	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessInside, tessEdge);
+	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessInside, tessEdge, camera->getPosition());
 	shader->render(renderer->getDeviceContext(), tessQuad->getIndexCount());
 
 	// Render GUI

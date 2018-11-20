@@ -16,7 +16,8 @@ private:
 		float tessellationFactor;
 		float tessEdge;
 		float tessInside;
-		float padding;
+		XMFLOAT3 cameraPos;
+		XMFLOAT2 padding;
 	};
 
 public:
@@ -24,11 +25,14 @@ public:
 	TessellationShader(ID3D11Device* device, HWND hwnd);
 	~TessellationShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, int tessInside, int tessEdge);
+	void setShaderParameters(ID3D11DeviceContext * deviceContext, const XMMATRIX & worldMatrix, const XMMATRIX & viewMatrix, const XMMATRIX & projectionMatrix, ID3D11ShaderResourceView * texture, int tessInside, int tessEdge, XMFLOAT3 cameraPos);
+
 
 private:
 	void initShader(WCHAR* vsFilename, WCHAR* psFilename);
 	void initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename);
+
+
 
 private:
 	ID3D11Buffer* matrixBuffer;
