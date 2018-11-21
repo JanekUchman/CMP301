@@ -30,6 +30,6 @@ private:
 	GeometryShader* geometryShader;
 	TessellationShader* tessShader;
 	MultiPointMesh* mesh;
-	TessellationQuad* tessQuads[TESS_QUAD_ROWS][TESS_QUAD_COLS];
+	SphereMesh
 	Light* light;
 };

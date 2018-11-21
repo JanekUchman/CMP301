@@ -38,34 +38,16 @@ struct OutputType
 ConstantOutputType PatchConstantFunction(InputPatch<InputType, 4> inputPatch, uint patchId : SV_PrimitiveID)
 {    
     ConstantOutputType output;
-
-    float3 newCameraPos = mul(cameraPos, worldMatrix);
-    // newCameraPos = mul(newCameraPos, viewMatrix);
-
-    float3 newPos = inputPatch[0].position;
-    //float3 newPos = mul(inputPatch[0].position, worldMatrix);
-    //newPos = mul(newPos, viewMatrix);
-    //newPos = mul(newPos, projectionMatrix);
-
-
-    float3 diff = newPos - cameraPos;
-    float dist = distance(cameraPos, mul(worldMatrix, inputPatch[0].position));
-
-    float newTessEdge = tessEdge / dist;
-    float newTessInside = tessInside / dist;
-
-    newTessEdge = newTessEdge > tessEdge ? tessEdge : newTessEdge;
-    newTessInside = newTessInside > tessInside ? tessInside : newTessInside;
-
+    
     // Set the tessellation factors for the three edges of the triangle.
-	output.edges[0] = newTessEdge;// tessellationFactor;
-    output.edges[1] = newTessEdge; //tessellationFactor;
-    output.edges[2] = newTessEdge; // tessellationFactor;
-    output.edges[3] = newTessEdge;
+	output.edges[0] = tessEdge;// tessellationFactor;
+    output.edges[1] = tessEdge; //tessellationFactor;
+    output.edges[2] = tessEdge; // tessellationFactor;
+    output.edges[3] = tessEdge;
 
     // Set the tessellation factor for tessallating inside the triangle.
-    output.inside[0] = newTessInside;
-    output.inside[1] = newTessInside;
+    output.inside[0] = tessInside;
+    output.inside[1] = tessInside;
 
     return output;
 }

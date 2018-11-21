@@ -12,14 +12,6 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	// Call super/parent init function (required!)
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
-	for (int x = 0; x < TESS_QUAD_ROWS; x ++)
-	{
-		for (int y = 0; y < TESS_QUAD_COLS; y++)
-		{
-			tessQuads[x][y] = new TessellationQuad(renderer->getDevice(), renderer->getDeviceContext(), XMFLOAT2(x, y));
-		}
-	}
-
 	// Create Mesh object and shader object
 	mesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
