@@ -11,7 +11,7 @@ Icosahedron::Icosahedron(ID3D11Device* device, ID3D11DeviceContext* deviceContex
 Icosahedron::~Icosahedron()
 {
 }
-void Icosahedron::initBuffers(ID3D11Device* device, D3D_PRIMITIVE_TOPOLOGY top)
+void Icosahedron::initBuffers(ID3D11Device* device)
 {
 	//https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
 	const float X=.525731112119133606f;

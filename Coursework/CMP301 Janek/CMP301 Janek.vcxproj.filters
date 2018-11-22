@@ -79,5 +79,11 @@
     <FxCompile Include="tessellation_vs.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="displacement_ps.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="displacement_vs.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

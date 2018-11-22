@@ -21,6 +21,8 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	tessFactor = 6;
 
+	icosahedron = new Icosahedron(renderer->getDevice(), renderer->getDeviceContext());
+
 	light = new Light;
 	light->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
 	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
@@ -79,15 +81,9 @@ bool App1::render()
 	geometryShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), light, camera->getPosition());
 	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
 
-	for (int x = 0; x < TESS_QUAD_ROWS; x++)
-	{
-		for (int y = 0; y < TESS_QUAD_COLS; y++)
-		{
-			tessQuads[x][y]->sendData(renderer->getDeviceContext());
-			tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessFactor, camera->getPosition());
-			tessShader->render(renderer->getDeviceContext(), tessQuads[x][y]->getIndexCount());
-		}
-	}
+	icosahedron->sendData(renderer->getDeviceContext());
+	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessFactor, camera->getPosition());
+	tessShader->render(renderer->getDeviceContext(), icosahedron->getIndexCount());
 
 	// Render GUI
 	gui();

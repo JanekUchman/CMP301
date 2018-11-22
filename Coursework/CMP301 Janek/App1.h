@@ -10,6 +10,7 @@
 #include "MultiPointMesh.h"
 #include "TessellationQuad.h"
 #include "TessellationShader.h"
+#include "Icosahedron.h"
 
 class App1 : public BaseApplication
 {
@@ -30,6 +31,6 @@ private:
 	GeometryShader* geometryShader;
 	TessellationShader* tessShader;
 	MultiPointMesh* mesh;
-	SphereMesh
+	Icosahedron* icosahedron;
 	Light* light;
 };
