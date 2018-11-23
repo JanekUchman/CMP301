@@ -12,26 +12,36 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	// Call super/parent init function (required!)
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
-	// Create Mesh object and shader object
+	// Create Mesh objects
 	billboardMesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
 	icosahedron = new Icosahedron(renderer->getDevice(), renderer->getDeviceContext());
 
-
+	//Load texture
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
-	geometryShader = new GeometryShader(renderer->getDevice(), hwnd);
 
+	//Create shaders
+	geometryShader = new GeometryShader(renderer->getDevice(), hwnd);
 	tessShader = new TessellationShader(renderer->getDevice(), hwnd);
 
+	//Set values
 	tessFactor = 6;
 
+	//Set lights
+	lights[0] = new Light;
+	lights[1] = new Light;
 
-	light = new Light;
-	light->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
-	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	light->setDirection(0.0f, -0.7f, 0.7f);
-	light->setPosition(0.f, 0.f, -10.f);
+	// Setup light 1
+	lights[0]->setPosition(-3.0f, 3.0f, -3.0f);
+	lights[0]->setLookAt(0.0f, 0.0f, 0.0f);
+	lights[0]->setAmbientColour(0.15f, 0.15f, 0.15f, 1.0f);
+	lights[0]->setDiffuseColour(1.0f, 0.8f,0.8f, 1.0f);
+	lights[0]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
+	// setup light 2
+	lights[1]->setPosition(-6.0f, 3.0f, -5.0f);
+	lights[1]->setLookAt(0.0f, 0.0f, 0.0f);
+	lights[1]->setDiffuseColour(0.5f, 0.6f, 0.5f, 1.0f);
+	lights[1]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
 }
-
 
 App1::~App1()
 {
@@ -39,7 +49,9 @@ App1::~App1()
 	BaseApplication::~BaseApplication();
 
 	// Release the Direct3D object.
-
+	//TODO deletes 
+	delete lights[0];
+	delete lights[1];
 }
 
 
@@ -82,7 +94,7 @@ bool App1::render()
 	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());*/
 
 	icosahedron->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessFactor, camera->getPosition());
+	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor);
 	tessShader->render(renderer->getDeviceContext(), icosahedron->getIndexCount());
 
 	// Render GUI

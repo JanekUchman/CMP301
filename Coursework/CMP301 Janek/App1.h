@@ -1,9 +1,6 @@
 // Application.h
 #pragma once
 
-#define TESS_QUAD_ROWS 10
-#define TESS_QUAD_COLS 10
-
 // Includes
 #include "DXF.h"	// include dxframework
 #include "GeometryShader.h"
@@ -34,5 +31,6 @@ private:
 	Icosahedron* icosahedron;
 	QuadMesh* floor;
 
-	Light* light;
+	Light* lights[2];
+
 };
