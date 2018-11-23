@@ -33,10 +33,10 @@
     <ClCompile Include="TessellationShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Icosahedron.cpp">
+    <ClCompile Include="DisplacementShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DisplacementShader.cpp">
+    <ClCompile Include="IcosahedronMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,10 +56,10 @@
     <ClInclude Include="TessellationShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Icosahedron.h">
+    <ClInclude Include="DisplacementShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DisplacementShader.h">
+    <ClInclude Include="IcosahedronMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

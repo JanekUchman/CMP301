@@ -14,14 +14,17 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	// Create Mesh objects
 	billboardMesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
-	icosahedron = new Icosahedron(renderer->getDevice(), renderer->getDeviceContext());
-
+	icosahedronMesh = new IcosahedronMesh(renderer->getDevice(), renderer->getDeviceContext());
+	floorMesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
+	
 	//Load texture
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
+	textureMgr->loadTexture("lavaHM", L"res/lava_height_2.png");
 
 	//Create shaders
 	geometryShader = new GeometryShader(renderer->getDevice(), hwnd);
 	tessShader = new TessellationShader(renderer->getDevice(), hwnd);
+	displacementShader = new DisplacementShader(renderer->getDevice(), hwnd);
 
 	//Set values
 	tessFactor = 6;
@@ -93,9 +96,13 @@ bool App1::render()
 	geometryShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), light, camera->getPosition());
 	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());*/
 
-	icosahedron->sendData(renderer->getDeviceContext());
+	/*icosahedronMesh->sendData(renderer->getDeviceContext());
 	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor);
-	tessShader->render(renderer->getDeviceContext(), icosahedron->getIndexCount());
+	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
+
+	floorMesh->sendData(renderer->getDeviceContext());
+	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), 0.0f);
+	displacementShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
 
 	// Render GUI
 	gui();

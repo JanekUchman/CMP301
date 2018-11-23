@@ -29,13 +29,7 @@ DisplacementShader::~DisplacementShader()
 		layout = 0;
 	}
 
-	// Release the light constant buffer.
-	if (lightBuffer)
-	{
-		lightBuffer->Release();
-		lightBuffer = 0;
-	}
-
+	
 	if (timeBuffer)
 	{
 		timeBuffer->Release();
@@ -51,8 +45,6 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_SAMPLER_DESC samplerDispDesc;
-
-	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC timeBufferDesc;
 
 
@@ -68,6 +60,14 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	matrixBufferDesc.MiscFlags = 0;
 	matrixBufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
+
+	timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	timeBufferDesc.ByteWidth = sizeof(TimeBufferType);
+	timeBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	timeBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	timeBufferDesc.MiscFlags = 0;
+	timeBufferDesc.StructureByteStride = 0;
+	renderer->CreateBuffer(&timeBufferDesc, NULL, &timeBuffer);
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -92,38 +92,17 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	samplerDispDesc.MinLOD = 0;
 	samplerDispDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	renderer->CreateSamplerState(&samplerDispDesc, &sampleStateDisplacement);
-
-	// Setup light buffer
-	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
-	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
-	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
-	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	lightBufferDesc.MiscFlags = 0;
-	lightBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&lightBufferDesc, NULL, &lightBuffer);
-
-	timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	timeBufferDesc.ByteWidth = sizeof(TimeBufferType);
-	timeBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	timeBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	timeBufferDesc.MiscFlags = 0;
-	timeBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&timeBufferDesc, NULL, &timeBuffer);
-
 }
 
 
 void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, 
-	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* displacementMap, Light* light, float deltaTime, float height, float frequency, float speed)
+	ID3D11ShaderResourceView* displacementMap,  float deltaTime)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	
 	XMMATRIX tworld, tview, tproj;
-
 
 	// Transpose the matrices to prepare them for the shader.
 	tworld = XMMatrixTranspose(worldMatrix);
@@ -143,28 +122,15 @@ void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	timePtr = (TimeBufferType*)mappedResource.pData;
 	time += deltaTime;
 	timePtr->time = time;
-	timePtr->height = height;
-	timePtr->frequency = frequency;
-	timePtr->speed = speed;
-	deviceContext->Unmap(timeBuffer, 1);
+	timePtr->padding = { 0,0,0 };
+	deviceContext->Unmap(timeBuffer, 0);
 	deviceContext->VSSetConstantBuffers(1, 1, &timeBuffer);
 
-	//Additional
-	// Send light data to pixel shader
-	LightBufferType* lightPtr;
-	deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	lightPtr = (LightBufferType*)mappedResource.pData;
-	lightPtr->ambient = light->getAmbientColour();
-	lightPtr->diffuse = light->getDiffuseColour();
-	lightPtr->position = light->getPosition();
-	lightPtr->padding = 0.0f;
-	deviceContext->Unmap(lightBuffer, 0);
-	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->VSSetShaderResources(0, 1, &displacementMap);
 	deviceContext->VSSetSamplers(0, 1, &sampleStateDisplacement);
 
-	deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(0, 1, &displacementMap);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }

@@ -7,7 +7,8 @@
 #include "MultiPointMesh.h"
 #include "TessellationQuad.h"
 #include "TessellationShader.h"
-#include "Icosahedron.h"
+#include "IcosahedronMesh.h"
+#include "DisplacementShader.h"
 
 class App1 : public BaseApplication
 {
@@ -24,13 +25,19 @@ protected:
 	void gui();
 
 private:
+	//Variables
 	int tessFactor;
+	//Shaders
 	GeometryShader* geometryShader;
 	TessellationShader* tessShader;
-	MultiPointMesh* billboardMesh;
-	Icosahedron* icosahedron;
-	QuadMesh* floor;
+	DisplacementShader* displacementShader;
 
+	//Meshs
+	MultiPointMesh* billboardMesh;
+	IcosahedronMesh* icosahedronMesh;
+	PlaneMesh* floorMesh;
+
+	//Lights
 	Light* lights[2];
 
 };

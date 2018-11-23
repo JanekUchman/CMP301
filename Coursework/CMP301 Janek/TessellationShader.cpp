@@ -124,14 +124,13 @@ void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	tessPtr->tessEdge = tessFactor;
 	tessPtr->tessInside = tessFactor;
 	tessPtr->tessellationFactor = 0;
-	tessPtr->cameraPos = cameraPos;
 	tessPtr->padding = XMFLOAT2(0,0);
 
 	deviceContext->Unmap(tessellationBuffer, 0);
 	deviceContext->HSSetConstantBuffers(0, 1, &tessellationBuffer);
 
 	// Set shader texture resource in the pixel shader.
-	deviceContext->PSSetShaderResources(0, 1, &texture);
+	//deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 
