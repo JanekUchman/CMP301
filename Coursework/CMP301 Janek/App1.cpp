@@ -13,7 +13,10 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh object and shader object
-	mesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
+	billboardMesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
+	icosahedron = new Icosahedron(renderer->getDevice(), renderer->getDeviceContext());
+
+
 	textureMgr->loadTexture("brick", L"res/brick1.dds");
 	geometryShader = new GeometryShader(renderer->getDevice(), hwnd);
 
@@ -21,15 +24,12 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	tessFactor = 6;
 
-	icosahedron = new Icosahedron(renderer->getDevice(), renderer->getDeviceContext());
 
 	light = new Light;
 	light->setAmbientColour(0.3f, 0.3f, 0.3f, 1.0f);
 	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	light->setDirection(0.0f, -0.7f, 0.7f);
 	light->setPosition(0.f, 0.f, -10.f);
-
-	wireframeToggle = true;
 }
 
 
@@ -77,9 +77,9 @@ bool App1::render()
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
 	// Send geometry data, set shader parameters, render object with shader
-	mesh->sendData(renderer->getDeviceContext());
+	/*mesh->sendData(renderer->getDeviceContext());
 	geometryShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), light, camera->getPosition());
-	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());
+	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());*/
 
 	icosahedron->sendData(renderer->getDeviceContext());
 	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), tessFactor, camera->getPosition());

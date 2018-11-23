@@ -30,7 +30,9 @@ private:
 	int tessFactor;
 	GeometryShader* geometryShader;
 	TessellationShader* tessShader;
-	MultiPointMesh* mesh;
+	MultiPointMesh* billboardMesh;
 	Icosahedron* icosahedron;
+	QuadMesh* floor;
+
 	Light* light;
 };
