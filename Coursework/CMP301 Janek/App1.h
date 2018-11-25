@@ -19,6 +19,7 @@ public:
 	void init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input* in, bool VSYNC, bool FULL_SCREEN);
 
 	bool frame();
+	
 
 protected:
 	bool render();
@@ -27,6 +28,10 @@ protected:
 private:
 	//Variables
 	int tessFactor;
+	//lava variables
+	float lavaFlowRate;
+	float lavaColours[3];
+	bool lavaInvert;
 	//Shaders
 	GeometryShader* geometryShader;
 	TessellationShader* tessShader;

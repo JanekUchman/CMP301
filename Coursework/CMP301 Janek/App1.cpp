@@ -28,7 +28,11 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 
 	//Set values
 	tessFactor = 6;
-
+	lavaFlowRate = 0.1f;
+	lavaColours[0] = 0.5f;
+	lavaColours[1] = 0.25f;
+	lavaColours[2] = 0.25f;
+	lavaInvert = true;
 	//Set lights
 	lights[0] = new Light;
 	lights[1] = new Light;
@@ -101,7 +105,7 @@ bool App1::render()
 	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
 
 	floorMesh->sendData(renderer->getDeviceContext());
-	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), 0.0f);
+	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), timer->getTime()*lavaFlowRate, lavaColours, lavaInvert);
 	displacementShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
 
 	// Render GUI
@@ -113,6 +117,8 @@ bool App1::render()
 	return true;
 }
 
+
+
 void App1::gui()
 {
 	// Force turn off unnecessary shader stages.
@@ -123,7 +129,10 @@ void App1::gui()
 	// Build UI
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
-
+	//Variables
+	ImGui::SliderFloat("Lava flow rate: ", &lavaFlowRate, -1, 1);
+	ImGui::ColorPicker3("Lava colour", lavaColours);
+	ImGui::Checkbox("Invert lava colours: ", &lavaInvert);
 	// Render UI
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 	ImGui::Render();

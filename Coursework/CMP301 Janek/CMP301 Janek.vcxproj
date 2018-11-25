@@ -128,6 +128,7 @@
   <ItemGroup>
     <ClCompile Include="App1.cpp" />
     <ClCompile Include="DisplacementShader.cpp" />
+    <ClCompile Include="DXUtility.cpp" />
     <ClCompile Include="GeometryShader.cpp" />
     <ClCompile Include="IcosahedronMesh.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -138,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="App1.h" />
     <ClInclude Include="DisplacementShader.h" />
+    <ClInclude Include="DXUtility.h" />
     <ClInclude Include="GeometryShader.h" />
     <ClInclude Include="IcosahedronMesh.h" />
     <ClInclude Include="MultiPointMesh.h" />

@@ -34,9 +34,9 @@ struct OutputType
 OutputType main(InputType input)
 {
 	OutputType output;
-
+    input.tex.x += time;
 	float4 textureColour = texture0.SampleLevel(sampler0, input.tex, 0);
-	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) * 10;
+	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) * 2;
 
 	input.position.y += averageDisplacement;
 

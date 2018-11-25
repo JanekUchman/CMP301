@@ -46,28 +46,33 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	D3D11_SAMPLER_DESC samplerDesc;
 	D3D11_SAMPLER_DESC samplerDispDesc;
 	D3D11_BUFFER_DESC timeBufferDesc;
+	D3D11_BUFFER_DESC colourBufferDesc;
 
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
 	loadPixelShader(psFilename);
 
-	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
+	//// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
+	//matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	//matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//matrixBufferDesc.MiscFlags = 0;
+	//matrixBufferDesc.StructureByteStride = 0;
+	//renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
 
-	timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	/*timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	timeBufferDesc.ByteWidth = sizeof(TimeBufferType);
 	timeBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	timeBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	timeBufferDesc.MiscFlags = 0;
-	timeBufferDesc.StructureByteStride = 0;
-	renderer->CreateBuffer(&timeBufferDesc, NULL, &timeBuffer);
+	timeBufferDesc.StructureByteStride = 0;*/
+	//renderer->CreateBuffer(&timeBufferDesc, NULL, &timeBuffer);
+
+	DXUtility::CreateBuffer(sizeof(MatrixBufferType), &matrixBuffer, renderer);
+	DXUtility::CreateBuffer(sizeof(TimeBufferType), &timeBuffer, renderer);
+	DXUtility::CreateBuffer(sizeof(ColourBufferType), &colourBuffer, renderer);
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -95,8 +100,10 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 }
 
 
+
+
 void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, 
-	ID3D11ShaderResourceView* displacementMap,  float deltaTime)
+	ID3D11ShaderResourceView* displacementMap,  float deltaTime, float lavaColours[3], bool lavaInvert)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -125,6 +132,17 @@ void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	timePtr->padding = { 0,0,0 };
 	deviceContext->Unmap(timeBuffer, 0);
 	deviceContext->VSSetConstantBuffers(1, 1, &timeBuffer);
+
+	// Send time data to vertex shader
+	ColourBufferType* colourPtr;
+	deviceContext->Map(colourBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	colourPtr = (ColourBufferType*)mappedResource.pData;
+	colourPtr->red = lavaColours[0];
+	colourPtr->green = lavaColours[1];
+	colourPtr->blue = lavaColours[2];
+	colourPtr->invert = lavaInvert ? 1 : 0;
+	deviceContext->Unmap(colourBuffer, 0);
+	deviceContext->PSSetConstantBuffers(0, 1, &colourBuffer);
 
 
 	// Set shader texture resource in the pixel shader.
