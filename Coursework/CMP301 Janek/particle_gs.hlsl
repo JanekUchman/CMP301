@@ -84,7 +84,7 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
     //float3 temp2 = (planeNormal.x / temp, planeNormal.y / temp, planeNormal.z / temp);
     //float3 upVector = normalize(temp2);
 
-    //float3 upVector = float3(0.0f, 1.0f, 0.0f);
+    float3 upVector = float3(0.0f, 1.0f, 0.0f);
 
     float3 rightVector = normalize(cross(planeNormal, upVector));
 

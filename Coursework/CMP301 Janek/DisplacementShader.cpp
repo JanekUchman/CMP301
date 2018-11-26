@@ -42,61 +42,16 @@ DisplacementShader::~DisplacementShader()
 
 void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	D3D11_SAMPLER_DESC samplerDesc;
-	D3D11_SAMPLER_DESC samplerDispDesc;
-	D3D11_BUFFER_DESC timeBufferDesc;
-	D3D11_BUFFER_DESC colourBufferDesc;
-
-
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
 	loadPixelShader(psFilename);
 
-	//// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	//matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	//matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	//matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	//matrixBufferDesc.MiscFlags = 0;
-	//matrixBufferDesc.StructureByteStride = 0;
-	//renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
-
-	/*timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	timeBufferDesc.ByteWidth = sizeof(TimeBufferType);
-	timeBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	timeBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	timeBufferDesc.MiscFlags = 0;
-	timeBufferDesc.StructureByteStride = 0;*/
-	//renderer->CreateBuffer(&timeBufferDesc, NULL, &timeBuffer);
-
-	DXUtility::CreateBuffer(sizeof(MatrixBufferType), &matrixBuffer, renderer);
-	DXUtility::CreateBuffer(sizeof(TimeBufferType), &timeBuffer, renderer);
-	DXUtility::CreateBuffer(sizeof(ColourBufferType), &colourBuffer, renderer);
-
-	// Create a texture sampler state description.
-	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	renderer->CreateSamplerState(&samplerDesc, &sampleState);
-
-	//// Create a texture sampler state description.
-	samplerDispDesc.Filter = D3D11_FILTER_ANISOTROPIC;
-	samplerDispDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDispDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDispDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDispDesc.MipLODBias = 0.0f;
-	samplerDispDesc.MaxAnisotropy = 1;
-	samplerDispDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDispDesc.MinLOD = 0;
-	samplerDispDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	renderer->CreateSamplerState(&samplerDispDesc, &sampleStateDisplacement);
+	DXUtility::CreateBufferDesc(sizeof(MatrixBufferType), &matrixBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(TimeBufferType), &timeBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(ColourBufferType), &colourBuffer, renderer);
+	DXUtility::CreateSamplerDesc(&sampleState, renderer);
+	DXUtility::CreateSamplerDesc(&sampleStateDisplacement, renderer);
+	
 }
 
 

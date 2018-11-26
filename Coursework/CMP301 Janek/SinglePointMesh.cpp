@@ -1,26 +1,52 @@
-#include "MultiPointMesh.h"
+#include "SinglePointMesh.h"
 
 //TODO make this take more than 4 points
 
-MultiPointMesh::MultiPointMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+SinglePointMesh::SinglePointMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	initBuffers(device);
 }
 
 // Release resources.
-MultiPointMesh::~MultiPointMesh()
+SinglePointMesh::~SinglePointMesh()
 {
 	// Run parent deconstructor
 	BaseMesh::~BaseMesh();
 }
+void SinglePointMesh::setPosition(XMINT3 setPos)
+{
+	startPos = setPos;
+	position = XMFLOAT3((rand() % startPos.x) - startPos.x/2, (rand() % startPos.y) - startPos.y, (rand() % startPos.z) - startPos.z/2);
+}
+
+void SinglePointMesh::setSpeed(XMINT3 setSpeed)
+{
+	startSpeed = setSpeed;
+	speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);
+}
+
+XMFLOAT3 SinglePointMesh::updatePosition(float deltaTime)
+{
+
+	position.x -= deltaTime*speed.x;
+	position.y -= deltaTime*speed.y;
+	position.z -= deltaTime*speed.z;
+
+	if (position.y <= -15)
+	{
+		position = XMFLOAT3((rand() % startPos.x) - startPos.x / 2, (rand() % startPos.y) - startPos.y, (rand() % startPos.z) - startPos.z / 2);
+		speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);
+	}
+	return position;
+}
 
 // Build shape and fill buffers.
-void MultiPointMesh::initBuffers(ID3D11Device* device)
+void SinglePointMesh::initBuffers(ID3D11Device* device)
 {
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 
-	vertexCount = 6;
-	indexCount = 6;
+	vertexCount = 1;
+	indexCount = 1;
 
 	VertexType_Colour* vertices = new VertexType_Colour[vertexCount];
 	unsigned long* indices = new unsigned long[indexCount];
@@ -29,28 +55,9 @@ void MultiPointMesh::initBuffers(ID3D11Device* device)
 	vertices[0].position = XMFLOAT3(-1.0f, 1.0f, 0.0f);  // Top left
 	vertices[0].colour = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 
-	vertices[1].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // bottom left.
-	vertices[1].colour = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-
-	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // bottom right.
-	vertices[2].colour = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[3].position = XMFLOAT3(1.0f, 1.0f, 0.0f);  // top right.
-	vertices[3].colour = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[4].position = XMFLOAT3(2.0f, 1.0f, 0.0f);  // top right.
-	vertices[4].colour = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[5].position = XMFLOAT3(2.0f, -1.0f, 0.0f);  // top right.
-	vertices[5].colour = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
 	// Load the index array with data.
 	indices[0] = 0;  // Top/
-	indices[1] = 1;  // Bottom left.
-	indices[2] = 2;  // Bottom right.
-	indices[3] = 3;
-	indices[4] = 4;
-	indices[5] = 5;
+	
 
 
 	D3D11_BUFFER_DESC vertexBufferDesc = { sizeof(VertexType_Colour) * vertexCount, D3D11_USAGE_DEFAULT, D3D11_BIND_VERTEX_BUFFER, 0, 0, 0 };
@@ -69,7 +76,7 @@ void MultiPointMesh::initBuffers(ID3D11Device* device)
 }
 
 // Send Geometry data to the GPU
-void MultiPointMesh::sendData(ID3D11DeviceContext* deviceContext)
+void SinglePointMesh::sendData(ID3D11DeviceContext* deviceContext)
 {
 	unsigned int stride;
 	unsigned int offset;

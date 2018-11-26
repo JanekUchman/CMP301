@@ -34,11 +34,31 @@ struct OutputType
 OutputType main(InputType input)
 {
 	OutputType output;
-    input.tex.x += time;
-	float4 textureColour = texture0.SampleLevel(sampler0, input.tex, 0);
-	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) * 2;
+    //input.tex.y += time;
 
-	input.position.y += averageDisplacement;
+     // Calculate the normal vector against the world matrix only and normalise.
+    output.normal = mul(input.normal, (float3x3) worldMatrix);
+    output.normal = normalize(output.normal);
+
+
+    input.tex.x = asin(output.normal.x) / (2.0 * 3.14159265359f) + 0.5;
+
+    input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
+
+    //input.tex.x = atan2(output.normal.x, output.normal.z) / (2.0 * 3.14159265359f) + 0.5;
+
+    //input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
+
+
+
+
+
+	float4 textureColour = texture0.SampleLevel(sampler0, input.tex, 0);
+	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) /10;
+
+   
+
+    input.position.xyz += averageDisplacement * output.normal;
 
 
 	// Calculate the position of the vertex against the world, view, and projection matrices.
@@ -49,9 +69,7 @@ OutputType main(InputType input)
 	// Store the texture coordinates for the pixel shader.
 	output.tex = input.tex;
 
-	// Calculate the normal vector against the world matrix only and normalise.
-	output.normal = mul(input.normal, (float3x3)worldMatrix);
-	output.normal = normalize(output.normal);
+	
 
 	output.worldPosition = mul(input.position, worldMatrix).xyz;
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DXF.h"
+#include "DXUtility.h"
 
 using namespace std;
 using namespace DirectX;

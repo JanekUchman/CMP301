@@ -39,15 +39,20 @@ ConstantOutputType PatchConstantFunction(InputPatch<InputType, 4> inputPatch, ui
 {    
     ConstantOutputType output;
     
+    float distance = (cameraPos.x * inputPatch[0].position.x + cameraPos.y * inputPatch[0].position.y + cameraPos.z * inputPatch[0].position.z);
+    distance = sqrt(distance);
+
+    float newTess = tessEdge * distance/10;
+
     // Set the tessellation factors for the three edges of the triangle.
-	output.edges[0] = tessEdge;// tessellationFactor;
-    output.edges[1] = tessEdge; //tessellationFactor;
-    output.edges[2] = tessEdge; // tessellationFactor;
-    output.edges[3] = tessEdge;
+    output.edges[0] = newTess; // tessellationFactor;
+    output.edges[1] = newTess; //tessellationFactor;
+    output.edges[2] = newTess; // tessellationFactor;
+    output.edges[3] = newTess;
 
     // Set the tessellation factor for tessallating inside the triangle.
-    output.inside[0] = tessInside;
-    output.inside[1] = tessInside;
+    output.inside[0] = newTess;
+    output.inside[1] = newTess;
 
     return output;
 }

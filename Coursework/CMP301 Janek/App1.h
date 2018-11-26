@@ -4,11 +4,17 @@
 // Includes
 #include "DXF.h"	// include dxframework
 #include "ParticleShader.h"
-#include "MultiPointMesh.h"
+#include "SinglePointMesh.h"
 #include "TessellationQuad.h"
 #include "TessellationShader.h"
 #include "IcosahedronMesh.h"
 #include "DisplacementShader.h"
+#include "TextureShader.h"
+#include "ShadowShader.h"
+#include "CubeMesh.h"
+#include "DepthShader.h"
+
+#define MAX_PARTICLES 40
 
 class App1 : public BaseApplication
 {
@@ -28,21 +34,34 @@ protected:
 private:
 	//Variables
 	int tessFactor;
+	int amountOfParticles;
 	//lava variables
 	float lavaFlowRate;
 	float lavaColours[3];
 	bool lavaInvert;
+	bool renderBox;
 	//Shaders
 	ParticleShader* particleShader;
 	TessellationShader* tessShader;
 	DisplacementShader* displacementShader;
+	TextureShader* textureShader;
+	ShadowShader* shadowShader;
+	DepthShader* depthShader;
 
 	//Meshs
-	MultiPointMesh* particleMesh;
+	SinglePointMesh* particleMesh[MAX_PARTICLES];
 	IcosahedronMesh* icosahedronMesh;
 	PlaneMesh* floorMesh;
+	SphereMesh* sphereMesh;
+	CubeMesh* cubeMesh;
+
+	//Render textures
+	RenderTexture* shadowMap;
 
 	//Lights
 	Light* lights[2];
+
+	//functions
+	void DepthPass();
 
 };

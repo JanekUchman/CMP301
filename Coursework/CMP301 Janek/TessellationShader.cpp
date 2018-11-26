@@ -37,35 +37,14 @@ TessellationShader::~TessellationShader()
 
 void TessellationShader::initShader(WCHAR* vsFilename,  WCHAR* psFilename)
 {
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	D3D11_BUFFER_DESC tessBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
 	loadPixelShader(psFilename);
 
-	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	renderer->CreateBuffer(&matrixBufferDesc, NULL, &matrixBuffer);
-
-	// Setup the description of the tess buffer
-	tessBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	tessBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	tessBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	tessBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	tessBufferDesc.MiscFlags = 0;
-	tessBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	renderer->CreateBuffer(&tessBufferDesc, NULL, &tessellationBuffer);
+	DXUtility::CreateBufferDesc(sizeof(MatrixBufferType), &matrixBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(TessellationBufferType), &tessellationBuffer, renderer);
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -95,7 +74,7 @@ void TessellationShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR*
 }
 
 
-void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, int tessFactor)
+void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, int tessFactor, XMFLOAT3 cameraPos)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -124,6 +103,7 @@ void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	tessPtr->tessEdge = tessFactor;
 	tessPtr->tessInside = tessFactor;
 	tessPtr->tessellationFactor = 0;
+	tessPtr->cameraPos = cameraPos;
 	tessPtr->padding = XMFLOAT2(0,0);
 
 	deviceContext->Unmap(tessellationBuffer, 0);

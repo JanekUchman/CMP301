@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DXF.h"
+#include "DXUtility.h"
 
 using namespace std;
 using namespace DirectX;
@@ -25,7 +26,7 @@ public:
 	TessellationShader(ID3D11Device* device, HWND hwnd);
 	~TessellationShader();
 
-	void setShaderParameters(ID3D11DeviceContext * deviceContext, const XMMATRIX & worldMatrix, const XMMATRIX & viewMatrix, const XMMATRIX & projectionMatrix, int tessFactor);
+	void setShaderParameters(ID3D11DeviceContext * deviceContext, const XMMATRIX & worldMatrix, const XMMATRIX & viewMatrix, const XMMATRIX & projectionMatrix, int tessFactor, XMFLOAT3 cameraPos);
 
 
 private:

@@ -1,6 +1,6 @@
 #include "DXUtility.h"
 
-void DXUtility::CreateBuffer(std::size_t size, ID3D11Buffer** buffer, ID3D11Device* renderer)
+void DXUtility::CreateBufferDesc(std::size_t size, ID3D11Buffer** buffer, ID3D11Device* renderer)
 {
 	D3D11_BUFFER_DESC bufferDesc;
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -11,3 +11,38 @@ void DXUtility::CreateBuffer(std::size_t size, ID3D11Buffer** buffer, ID3D11Devi
 	bufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&bufferDesc, NULL, buffer);
 }
+
+void DXUtility::CreateSamplerDesc(ID3D11SamplerState** sampler, ID3D11Device* renderer)
+{
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	renderer->CreateSamplerState(&samplerDesc, sampler);
+}
+
+void DXUtility::CreateTextureSamplerDesc(ID3D11SamplerState** sampler, ID3D11Device* renderer)
+{
+	D3D11_SAMPLER_DESC samplerDesc;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
+	samplerDesc.MipLODBias = 0.0f;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+	samplerDesc.BorderColor[0] = 0;
+	samplerDesc.BorderColor[1] = 0;
+	samplerDesc.BorderColor[2] = 0;
+	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	renderer->CreateSamplerState(&samplerDesc, sampler);
+}
+
