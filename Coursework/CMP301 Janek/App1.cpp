@@ -46,8 +46,9 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	lavaColours[1] = 0.25f;
 	lavaColours[2] = 0.25f;
 	lavaInvert = true;
-	renderBox = false;
+	renderBox = true;
 	amountOfParticles = 20;
+	numberOfMBlurSamples = 3;
 	//Set lights
 	lights[0] = new Light;
 	lights[1] = new Light;
@@ -108,57 +109,20 @@ bool App1::frame()
 
 bool App1::render()
 {
+
+	camera->update();
+
 	DepthPass();
+
+	ShadowPass();
 
 	// Clear the scene. (default blue colour)
 	//renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
 	renderer->beginScene(0.025f, 0.02f, 0.02f, 1.0f);
 	// Generate the view matrix based on the camera's position.
-	camera->update();
 
-	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX viewMatrix = camera->getViewMatrix();
-	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+	FinalPass();
 
-
-	/*icosahedronMesh->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
-	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
-	floorMesh->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMap->getShaderResourceView(), lights[0]);
-	shadowShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
-
-	worldMatrix = renderer->getWorldMatrix();
-	sphereMesh->sendData(renderer->getDeviceContext());
-	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), timer->getTime()*lavaFlowRate, lavaColours, lavaInvert);
-	displacementShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
-
-	// Send geometry data, set shader parameters, render object with shader
-	for (int i = 0; i < amountOfParticles; i++)
-	{
-		XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime());
-		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(particlePositon.x, particlePositon.y, particlePositon.z), XMMatrixScaling(0.15f, 0.15f, 0.15f));
-		particleMesh[i]->sendData(renderer->getDeviceContext());
-		particleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("particle"), lights[0], camera->getPosition());
-		particleShader->render(renderer->getDeviceContext(), particleMesh[i]->getIndexCount());
-	}
-
-	if (renderBox)
-	{
-		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-3, -3, -6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
-		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
-		cubeMesh->sendData(renderer->getDeviceContext());
-		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("box"));
-		textureShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
-	}
-
-	/*sphereMesh->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());*/
-
-	// Render GUI
 	gui();
 
 	// Swap the buffers
@@ -200,6 +164,101 @@ void App1::DepthPass()
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+void App1::ShadowPass()
+{
+	//
+	//// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	//XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	//XMMATRIX viewMatrix = camera->getViewMatrix();
+	//XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+
+	///*icosahedronMesh->sendData(renderer->getDeviceContext());
+	//tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
+	//tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
+	//worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
+	//floorMesh->sendData(renderer->getDeviceContext());
+	//shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMap->getShaderResourceView(), lights[0]);
+	//shadowShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
+
+	//worldMatrix = renderer->getWorldMatrix();
+	//sphereMesh->sendData(renderer->getDeviceContext());
+	//shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), timer->getTime()*lavaFlowRate, lavaColours, lavaInvert);
+	//shadowShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
+
+	//// Send geometry data, set shader parameters, render object with shader
+	//for (int i = 0; i < amountOfParticles; i++)
+	//{
+	//	XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime());
+	//	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(particlePositon.x, particlePositon.y, particlePositon.z), XMMatrixScaling(0.15f, 0.15f, 0.15f));
+	//	particleMesh[i]->sendData(renderer->getDeviceContext());
+	//	particleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("particle"), lights[0], camera->getPosition());
+	//	particleShader->render(renderer->getDeviceContext(), particleMesh[i]->getIndexCount());
+	//}
+
+	//if (renderBox)
+	//{
+	//	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-3, -3, -6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
+	//	worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
+	//	cubeMesh->sendData(renderer->getDeviceContext());
+	//	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("box"));
+	//	textureShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
+	//}
+
+	///*sphereMesh->sendData(renderer->getDeviceContext());
+	//tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
+	//tessShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());*/
+
+
+}
+void App1::FinalPass()
+{
+	
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+
+	/*icosahedronMesh->sendData(renderer->getDeviceContext());
+	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
+	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
+	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
+	floorMesh->sendData(renderer->getDeviceContext());
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMap->getShaderResourceView(), lights[0]);
+	shadowShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
+
+	worldMatrix = renderer->getWorldMatrix();
+	sphereMesh->sendData(renderer->getDeviceContext());
+	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), timer->getTime()*lavaFlowRate, lavaColours, lavaInvert);
+	displacementShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
+
+	// Send geometry data, set shader parameters, render object with shader
+	for (int i = 0; i < amountOfParticles; i++)
+	{
+		XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime());
+		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(particlePositon.x, particlePositon.y, particlePositon.z), XMMatrixScaling(0.15f, 0.15f, 0.15f));
+		particleMesh[i]->sendData(renderer->getDeviceContext());
+		particleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("particle"), lights[0], camera->getPosition(), lavaColours, lavaInvert);
+		particleShader->render(renderer->getDeviceContext(), particleMesh[i]->getIndexCount());
+	}
+
+	if (renderBox)
+	{
+		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-3, -3, -6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
+		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
+		cubeMesh->sendData(renderer->getDeviceContext());
+		textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("box"));
+		textureShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
+	}
+
+	/*sphereMesh->sendData(renderer->getDeviceContext());
+	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
+	tessShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());*/
+
+	
+}
 
 
 
@@ -219,6 +278,8 @@ void App1::gui()
 	ImGui::Checkbox("Invert lava colours: ", &lavaInvert);
 	ImGui::Checkbox("Render box: ", &renderBox);
 	ImGui::SliderInt("Amount of particles: ", &amountOfParticles, 0, MAX_PARTICLES);
+	ImGui::SliderInt("Blur samples: ", &numberOfMBlurSamples, 0, 10);
+
 	// Render UI
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 	ImGui::Render();

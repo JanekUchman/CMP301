@@ -8,6 +8,12 @@ cbuffer LightBuffer : register(b0)
 	float4 direction;
 };
 
+cbuffer ColourBuffer : register(b1)
+{
+    float3 colourTint;
+    float invertColour;
+};
+
 struct InputType
 {
     float4 position : SV_POSITION;
@@ -15,16 +21,17 @@ struct InputType
 	float3 normal : NORMAL;
 };
 
-float4 calculateLighting(float3 lightDirection, float3 normal, float4 diffuse)
-{
-	float intensity = saturate(dot(normal, lightDirection));
-	float4 colour = saturate(diffuse * intensity);
-	return colour;
-}
-
-
 float4 main(InputType input) : SV_TARGET
 {
-
-    return texture0.Sample(Sampler0, input.tex);
+    float4 textureColour = texture0.Sample(Sampler0, input.tex);
+    float4 finalColour = textureColour;
+    if (invertColour == 1)
+    {
+        finalColour.xyz = textureColour.xyz + colourTint;
+    }
+    else
+    {
+        finalColour.xyz = textureColour.xyz - colourTint;
+    }
+    return finalColour;
 }

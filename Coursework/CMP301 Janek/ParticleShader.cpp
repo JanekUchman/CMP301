@@ -46,6 +46,7 @@ void ParticleShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 
 	DXUtility::CreateBufferDesc(sizeof(MatrixBufferType), &matrixBuffer, renderer);
 	DXUtility::CreateBufferDesc(sizeof(LightBufferType), &lightBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(ColourBufferType), &colourBuffer, renderer);
 	DXUtility::CreateBufferDesc(sizeof(GeometryBufferType), &geometryBuffer, renderer);
 
 	
@@ -80,11 +81,13 @@ void ParticleShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psF
 }
 
 
-void ParticleShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, Light* light, XMFLOAT3 cameraPos)
+void ParticleShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, 
+	ID3D11ShaderResourceView* texture, Light* light, XMFLOAT3 cameraPos, float colourTint[3], float invertColours)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	LightBufferType* lightPtr;
+	ColourBufferType* colourPtr;
 	GeometryBufferType* geoPtr;
 	
 	// Transpose the matrices to prepare them for the shader.
@@ -110,6 +113,15 @@ void ParticleShader::setShaderParameters(ID3D11DeviceContext* deviceContext, con
 	lightPtr->padding = 0.f;
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
+
+	deviceContext->Map(colourBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	colourPtr = (ColourBufferType*)mappedResource.pData;
+	colourPtr->red = colourTint[0];
+	colourPtr->green = colourTint[1];
+	colourPtr->blue = colourTint[2];
+	colourPtr->invertColours = invertColours;
+	deviceContext->Unmap(colourBuffer, 0);
+	deviceContext->PSSetConstantBuffers(1, 1, &colourBuffer);
 
 	deviceContext->Map(geometryBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	geoPtr = (GeometryBufferType*)mappedResource.pData;

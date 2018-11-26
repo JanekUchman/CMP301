@@ -35,6 +35,7 @@ private:
 	//Variables
 	int tessFactor;
 	int amountOfParticles;
+	int numberOfMBlurSamples;
 	//lava variables
 	float lavaFlowRate;
 	float lavaColours[3];
@@ -57,11 +58,14 @@ private:
 
 	//Render textures
 	RenderTexture* shadowMap;
+	RenderTexture* motionBlur;
 
 	//Lights
 	Light* lights[2];
 
 	//functions
 	void DepthPass();
+	void ShadowPass();
+	void FinalPass();
 
 };
