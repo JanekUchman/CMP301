@@ -13,7 +13,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
 
 	// Create Mesh objects
-	billboardMesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
+	particleMesh = new MultiPointMesh(renderer->getDevice(), renderer->getDeviceContext());
 	icosahedronMesh = new IcosahedronMesh(renderer->getDevice(), renderer->getDeviceContext());
 	floorMesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
 	
@@ -22,7 +22,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	textureMgr->loadTexture("lavaHM", L"res/lava_height_2.png");
 
 	//Create shaders
-	geometryShader = new GeometryShader(renderer->getDevice(), hwnd);
+	particleShader = new ParticleShader(renderer->getDevice(), hwnd);
 	tessShader = new TessellationShader(renderer->getDevice(), hwnd);
 	displacementShader = new DisplacementShader(renderer->getDevice(), hwnd);
 
@@ -96,17 +96,17 @@ bool App1::render()
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
 	// Send geometry data, set shader parameters, render object with shader
-	/*mesh->sendData(renderer->getDeviceContext());
-	geometryShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), light, camera->getPosition());
-	geometryShader->render(renderer->getDeviceContext(), mesh->getIndexCount());*/
+	particleMesh->sendData(renderer->getDeviceContext());
+	particleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("brick"), lights[0], camera->getPosition());
+	particleShader->render(renderer->getDeviceContext(), particleMesh->getIndexCount());
 
 	/*icosahedronMesh->sendData(renderer->getDeviceContext());
 	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor);
 	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
 
-	floorMesh->sendData(renderer->getDeviceContext());
+	/*floorMesh->sendData(renderer->getDeviceContext());
 	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("lavaHM"), timer->getTime()*lavaFlowRate, lavaColours, lavaInvert);
-	displacementShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
+	displacementShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());*/
 
 	// Render GUI
 	gui();

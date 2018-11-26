@@ -67,14 +67,6 @@ float3 CalculateNormal(float3 lineOne, float3 lineTwo, float3 lineThree)
 void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 {
 	OutputType output;
-	
-	//float4 g_positions[4] =
-	//{
-	//	float4(-1, 1, 0, 0),
-	//	float4(-1, -1, 0, 0),
-	//	float4(1, 1, 0, 0),
-	//	float4(1, -1, 0, 0)
-	//};
 
 	float2 g_tex[4] =
 	{
@@ -85,10 +77,15 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 	};
 
     float3 planeNormal = input[0].position - cameraPos;
-    planeNormal.y = 0.0f;
+
     planeNormal = normalize(planeNormal);
 
-    float3 upVector = float3(0.0f, 1.0f, 0.0f);
+    //float temp = sqrt(planeNormal.x * planeNormal.x + planeNormal.y * planeNormal.y + planeNormal.z * planeNormal.z);
+    //float3 temp2 = (planeNormal.x / temp, planeNormal.y / temp, planeNormal.z / temp);
+    //float3 upVector = normalize(temp2);
+
+    //float3 upVector = float3(0.0f, 1.0f, 0.0f);
+
     float3 rightVector = normalize(cross(planeNormal, upVector));
 
     rightVector = rightVector * 0.5f;

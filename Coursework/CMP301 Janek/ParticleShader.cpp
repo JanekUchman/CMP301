@@ -1,14 +1,14 @@
 // geometry shader.cpp
-#include "geometryshader.h"
+#include "ParticleShader.h"
 
 
-GeometryShader::GeometryShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
+ParticleShader::ParticleShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"triangle_vs.cso", L"triangle_gs.cso", L"triangle_ps.cso");
+	initShader(L"particle_vs.cso", L"particle_gs.cso", L"particle_ps.cso");
 }
 
 
-GeometryShader::~GeometryShader()
+ParticleShader::~ParticleShader()
 {
 	// Release the sampler state.
 	if (sampleState)
@@ -35,7 +35,7 @@ GeometryShader::~GeometryShader()
 	BaseShader::~BaseShader();
 }
 
-void GeometryShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
+void ParticleShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -94,7 +94,7 @@ void GeometryShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 
 }
 
-void GeometryShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psFilename)
+void ParticleShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psFilename)
 {
 	// InitShader must be overwritten and it will load both vertex and pixel shaders + setup buffers
 	initShader(vsFilename, psFilename);
@@ -104,7 +104,7 @@ void GeometryShader::initShader(WCHAR* vsFilename, WCHAR* gsFilename, WCHAR* psF
 }
 
 
-void GeometryShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, Light* light, XMFLOAT3 cameraPos)
+void ParticleShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, Light* light, XMFLOAT3 cameraPos)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
@@ -148,7 +148,7 @@ void GeometryShader::setShaderParameters(ID3D11DeviceContext* deviceContext, con
 
 }
 
-void GeometryShader::render(ID3D11DeviceContext* deviceContext, int indexCount)
+void ParticleShader::render(ID3D11DeviceContext* deviceContext, int indexCount)
 {
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &sampleState);

@@ -3,7 +3,7 @@
 
 // Includes
 #include "DXF.h"	// include dxframework
-#include "GeometryShader.h"
+#include "ParticleShader.h"
 #include "MultiPointMesh.h"
 #include "TessellationQuad.h"
 #include "TessellationShader.h"
@@ -33,12 +33,12 @@ private:
 	float lavaColours[3];
 	bool lavaInvert;
 	//Shaders
-	GeometryShader* geometryShader;
+	ParticleShader* particleShader;
 	TessellationShader* tessShader;
 	DisplacementShader* displacementShader;
 
 	//Meshs
-	MultiPointMesh* billboardMesh;
+	MultiPointMesh* particleMesh;
 	IcosahedronMesh* icosahedronMesh;
 	PlaneMesh* floorMesh;
 
