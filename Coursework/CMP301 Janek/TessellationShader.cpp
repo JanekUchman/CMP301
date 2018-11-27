@@ -74,7 +74,7 @@ void TessellationShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR*
 }
 
 
-void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, int tessFactor, XMFLOAT3 cameraPos)
+void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, int tessFactor, XMFLOAT3 cameraPos, ID3D11ShaderResourceView* texture)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -90,12 +90,8 @@ void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	dataPtr->world = tworld;// worldMatrix;
 	dataPtr->view = tview;
 	dataPtr->projection = tproj;
-
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->DSSetConstantBuffers(0, 1, &matrixBuffer);
-
-	deviceContext->Unmap(matrixBuffer, 0);
-	deviceContext->HSSetConstantBuffers(1, 1, &matrixBuffer);
 
 	result = deviceContext->Map(tessellationBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	TessellationBufferType* tessPtr = (TessellationBufferType*)mappedResource.pData;
@@ -104,13 +100,13 @@ void TessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	tessPtr->tessInside = tessFactor;
 	tessPtr->tessellationFactor = 0;
 	tessPtr->cameraPos = cameraPos;
-	tessPtr->padding = XMFLOAT2(0,0);
+	tessPtr->padding = { 0,0 };
 
 	deviceContext->Unmap(tessellationBuffer, 0);
 	deviceContext->HSSetConstantBuffers(0, 1, &tessellationBuffer);
 
 	// Set shader texture resource in the pixel shader.
-	//deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 }
 

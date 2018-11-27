@@ -24,14 +24,19 @@ struct InputType
 float4 main(InputType input) : SV_TARGET
 {
     float4 textureColour = texture0.Sample(Sampler0, input.tex);
-    float4 finalColour = textureColour;
-    if (invertColour == 1)
+	float grey = (textureColour.x + textureColour.y + textureColour.z) / 3;
+    float4 finalColour = float4(grey, grey, grey, textureColour.w);
+	if (finalColour.w < 0.5f)
+	{
+		finalColour = float4(0,0,0,0);
+	}
+    else if (invertColour == 1)
     {
-        finalColour.xyz = textureColour.xyz + colourTint;
+		finalColour.xyz = finalColour.xyz + colourTint;
     }
     else
     {
-        finalColour.xyz = textureColour.xyz - colourTint;
+        finalColour.xyz = 1- (finalColour.xyz - colourTint);
     }
     return finalColour;
 }

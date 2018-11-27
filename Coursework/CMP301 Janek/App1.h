@@ -13,6 +13,7 @@
 #include "ShadowShader.h"
 #include "CubeMesh.h"
 #include "DepthShader.h"
+#include "TessellationSphere.h"
 
 #define MAX_PARTICLES 40
 
@@ -35,7 +36,7 @@ private:
 	//Variables
 	int tessFactor;
 	int amountOfParticles;
-	int numberOfMBlurSamples;
+	int numberOfBlurSamples;
 	//lava variables
 	float lavaFlowRate;
 	float lavaColours[3];
@@ -52,6 +53,8 @@ private:
 	//Meshs
 	SinglePointMesh* particleMesh[MAX_PARTICLES];
 	IcosahedronMesh* icosahedronMesh;
+	TessellationSphere* tessMesh;
+
 	PlaneMesh* floorMesh;
 	SphereMesh* sphereMesh;
 	CubeMesh* cubeMesh;

@@ -15,8 +15,10 @@ public:
 protected:
 	void initBuffers(ID3D11Device* device);
 	VertexType* vertices = new VertexType[12];
-	unsigned long* indices = new unsigned long[60];
+	unsigned long indices[60];
 	float radius = 1;
 	void Subdivide(unsigned long* indices, VertexType* vertices);
+	void SchneideIndices();
+	void FrankIndices();
 };
 

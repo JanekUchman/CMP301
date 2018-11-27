@@ -26,7 +26,7 @@ public:
 	TessellationShader(ID3D11Device* device, HWND hwnd);
 	~TessellationShader();
 
-	void setShaderParameters(ID3D11DeviceContext * deviceContext, const XMMATRIX & worldMatrix, const XMMATRIX & viewMatrix, const XMMATRIX & projectionMatrix, int tessFactor, XMFLOAT3 cameraPos);
+	void setShaderParameters(ID3D11DeviceContext * deviceContext, const XMMATRIX & worldMatrix, const XMMATRIX & viewMatrix, const XMMATRIX & projectionMatrix, int tessFactor, XMFLOAT3 cameraPos, ID3D11ShaderResourceView* texture);
 
 
 private:

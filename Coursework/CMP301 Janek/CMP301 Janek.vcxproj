@@ -138,6 +138,7 @@
     <ClCompile Include="SinglePointMesh.cpp" />
     <ClCompile Include="TessellationQuad.cpp" />
     <ClCompile Include="TessellationShader.cpp" />
+    <ClCompile Include="TessellationSphere.cpp" />
     <ClCompile Include="TextureShader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -152,6 +153,7 @@
     <ClInclude Include="SinglePointMesh.h" />
     <ClInclude Include="TessellationQuad.h" />
     <ClInclude Include="TessellationShader.h" />
+    <ClInclude Include="TessellationSphere.h" />
     <ClInclude Include="TextureShader.h" />
   </ItemGroup>
   <ItemGroup>

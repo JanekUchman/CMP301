@@ -58,7 +58,7 @@ void TessellationShader::initShader(WCHAR* vsFilename,  WCHAR* psFilename)
 
 	// Setup the description of the tess buffer
 	tessBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	tessBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	tessBufferDesc.ByteWidth = sizeof(TessellationBufferType);
 	tessBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	tessBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	tessBufferDesc.MiscFlags = 0;
