@@ -1,5 +1,7 @@
 #pragma once
 #include "BaseMesh.h"
+#include <cmath>
+
 class SinglePointMesh : public BaseMesh
 {
 public:
@@ -8,7 +10,7 @@ public:
 
 	void sendData(ID3D11DeviceContext*);
 
-	XMFLOAT3 updatePosition(float deltaTime);
+	XMFLOAT3 updatePosition(float deltaTime, float directionalSpeed);
 	void setPosition(XMINT3 setPos);
 	void setSpeed(XMINT3 startSpeed);
 protected:

@@ -25,14 +25,14 @@ void SinglePointMesh::setSpeed(XMINT3 setSpeed)
 	speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);
 }
 
-XMFLOAT3 SinglePointMesh::updatePosition(float deltaTime)
+XMFLOAT3 SinglePointMesh::updatePosition(float deltaTime, float directionalSpeed)
 {
 
-	position.x -= deltaTime*speed.x;
-	position.y -= deltaTime*speed.y;
-	position.z -= deltaTime*speed.z;
+	position.x += deltaTime*speed.x*directionalSpeed;
+	position.y += deltaTime*speed.y*directionalSpeed;
+	position.z += deltaTime*speed.z*directionalSpeed;
 
-	if (position.y <= -15)
+	if (abs(startPos.y - position.y) >= 20)
 	{
 		position = XMFLOAT3((rand() % startPos.x) - startPos.x / 2, (rand() % startPos.y) - startPos.y, (rand() % startPos.z) - startPos.z / 2);
 		speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);

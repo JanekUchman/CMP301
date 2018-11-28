@@ -35,6 +35,8 @@ protected:
 	void gui();
 
 private:
+	const int whiteLight = 0;
+	const int plasmaLight = 1;
 	//Variables
 	int tessFactor;
 	int amountOfParticles;
@@ -42,6 +44,7 @@ private:
 	//plasma variables
 	float plasmaFlowRate;
 	float plasmaColours[3];
+	float particleDirectionalSpeed;
 	bool plasmaInvert;
 	bool renderBox;
 	//Shaders

@@ -50,6 +50,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	plasmaColours[0] = 0.5f;
 	plasmaColours[1] = 0.25f;
 	plasmaColours[2] = 0.25f;
+	particleDirectionalSpeed = -1;
 	plasmaInvert = true;
 	renderBox = true;
 	amountOfParticles = 20;
@@ -69,17 +70,17 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	motionBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 
 	// Setup light 1
-	lights[0]->setPosition(-3.0f, 3.0f, -3.0f);
-	lights[0]->setLookAt(0.0f, 0.0f, 0.0f);
-	lights[0]->setAmbientColour(0.3f, 0.15f, 0.15f, 1.0f);
-	lights[0]->setDiffuseColour(1.0f, 0.8f,0.8f, 1.0f);
-	lights[0]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
-	lights[0]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
+	lights[whiteLight]->setPosition(0.0f, 3.0f, 0.0f);
+	lights[whiteLight]->setLookAt(0.0f, 0.0f, 0.0f);
+	lights[whiteLight]->setAmbientColour(0.5f, 0.55f, 0.5f, 1.0f);
+	lights[whiteLight]->setDiffuseColour(1.0f, 0.8f,0.8f, 1.0f);
+	lights[whiteLight]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
+	lights[whiteLight]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 	// setup red light
-	lights[1]->setPosition(-6.0f, 3.0f, -5.0f);
-	lights[1]->setLookAt(0.0f, 0.0f, 0.0f);
-	lights[1]->setDiffuseColour(1.0f, 0.3f, 0.3f, 1.0f);
-	lights[1]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
+	lights[plasmaLight]->setPosition(-6.0f, 3.0f, -5.0f);
+	lights[plasmaLight]->setLookAt(0.0f, 0.0f, 0.0f);
+	lights[plasmaLight]->setDiffuseColour(1.0f, 0.3f, 0.3f, 1.0f);
+	lights[plasmaLight]->setSpecularColour(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 App1::~App1()
@@ -231,7 +232,7 @@ void App1::RenderScene()
 
 	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
 	floorMesh->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMapTexture->getShaderResourceView(), lights[0]);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMapTexture->getShaderResourceView(), lights[whiteLight]);
 	shadowShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
 
 	//worldMatrix = renderer->getWorldMatrix();
@@ -242,10 +243,10 @@ void App1::RenderScene()
 
 
 
-	/*worldMatrix = XMMatrixTranslation(-2.5, 0, 0);
+	worldMatrix = XMMatrixTranslation(-2.5, 0, 0);
 	icosahedronMesh->sendData(renderer->getDeviceContext());
 	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
+	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
 
 	worldMatrix = renderer->getWorldMatrix();
 	sphereMesh->sendData(renderer->getDeviceContext());
@@ -265,17 +266,17 @@ void App1::RenderScene()
 	}
 
 	renderer->setAlphaBlending(true);
-	renderer->setZBuffer(false);
+
 	for (int i = 0; i < amountOfParticles; i++)
 	{
-		XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime());
+		XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime(), particleDirectionalSpeed);
 		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(particlePositon.x, particlePositon.y, particlePositon.z), XMMatrixScaling(0.15f, 0.15f, 0.15f));
 		particleMesh[i]->sendData(renderer->getDeviceContext());
 		particleShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("particle"), lights[0], camera->getPosition(), plasmaColours, plasmaInvert);
 		particleShader->render(renderer->getDeviceContext(), particleMesh[i]->getIndexCount());
 	}
 	renderer->setAlphaBlending(false);
-	renderer->setZBuffer(true);
+
 
 	/*TessellationSphere->sendData(renderer->getDeviceContext());
 	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
@@ -345,12 +346,14 @@ void App1::gui()
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 	//Variables
+	ImGui::SliderFloat("particle directional speed", &particleDirectionalSpeed, -1, 1);
 	ImGui::SliderFloat("plasma flow rate", &plasmaFlowRate, -1, 1);
-	ImGui::ColorPicker3("plasma colour", plasmaColours);
 	ImGui::Checkbox("Invert plasma colours: ", &plasmaInvert);
 	ImGui::Checkbox("Render box: ", &renderBox);
 	ImGui::SliderInt("Amount of particles", &amountOfParticles, 0, MAX_PARTICLES);
 	ImGui::SliderInt("Blur samples", &numberOfBlurSamples, 0, 10);
+	ImGui::ColorPicker3("plasma colour", plasmaColours);
+
 
 	// Render UI
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
