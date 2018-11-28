@@ -14,6 +14,8 @@
 #include "CubeMesh.h"
 #include "DepthShader.h"
 #include "TessellationSphere.h"
+#include "OrthoMesh.h"
+#include "MotionBlurShader.h"
 
 #define MAX_PARTICLES 40
 
@@ -37,10 +39,10 @@ private:
 	int tessFactor;
 	int amountOfParticles;
 	int numberOfBlurSamples;
-	//lava variables
-	float lavaFlowRate;
-	float lavaColours[3];
-	bool lavaInvert;
+	//plasma variables
+	float plasmaFlowRate;
+	float plasmaColours[3];
+	bool plasmaInvert;
 	bool renderBox;
 	//Shaders
 	ParticleShader* particleShader;
@@ -49,6 +51,7 @@ private:
 	TextureShader* textureShader;
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
+	MotionBlurShader* motionBlurShader;
 
 	//Meshs
 	SinglePointMesh* particleMesh[MAX_PARTICLES];
@@ -58,10 +61,11 @@ private:
 	PlaneMesh* floorMesh;
 	SphereMesh* sphereMesh;
 	CubeMesh* cubeMesh;
-
+	OrthoMesh* motionBlurMesh;
 	//Render textures
-	RenderTexture* shadowMap;
-	RenderTexture* motionBlur;
+	RenderTexture* shadowMapTexture;
+	RenderTexture* sceneTexture;
+	RenderTexture* motionBlurTexture;
 
 	//Lights
 	Light* lights[2];
@@ -69,6 +73,8 @@ private:
 	//functions
 	void DepthPass();
 	void ShadowPass();
+	void RenderScene();
+	void MotionBlurShaderPass();
 	void FinalPass();
 
 };

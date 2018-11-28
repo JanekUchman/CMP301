@@ -53,12 +53,12 @@ float4 main(InputType input) : SV_TARGET
 {
 
     matrix viewProjectionMatrix = mul(viewMatrix, projectionMatrix);
-    matrix prevViewProjectionMatrix = mul(prevViewMatrix, prevProjectionMatrix);
+    matrix prevViewProjectionMatrix = transpose(mul(prevViewMatrix, prevProjectionMatrix));
 
     //https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch27.html
      // Get the depth buffer value at this pixel.
-    float zOverW = Texture0.Sample(Sampler0, input.tex);
-    // H is the viewport position at this pixel in the range -1 to 1.
+    float zOverW = Texture0.Sample(Sampler0, input.tex).w;
+    //range -1 to 1.
     float4 viewportPos = float4(input.tex.x * 2 - 1, (1 - input.tex.y) * 2 - 1, zOverW, 1);
     // Transform by the view-projection inverse.
     float4 viewProjTransform = mul(viewportPos, viewProjectionMatrix);
@@ -73,7 +73,7 @@ float4 main(InputType input) : SV_TARGET
     previousPos /= previousPos.w;
     // Use this frame's position and last frame's to compute the pixel
    // velocity.
-    float2 velocity = (currentPos - previousPos) / 2.f;
+    float2 velocity = (currentPos - previousPos) *2.f;
 
     // Get the initial color at this pixel.
     float4 colour = Texture0.Sample(Sampler0, input.tex);

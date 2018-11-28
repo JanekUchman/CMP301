@@ -4,7 +4,7 @@
 
 MotionBlurShader::MotionBlurShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
-	initShader(L"horizontalBlur_vs.cso", L"horizontalBlur_ps.cso");
+	initShader(L"motionBlur_vs.cso", L"motionBlur_ps.cso");
 }
 
 
@@ -100,7 +100,6 @@ void MotionBlurShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
 	//Additional
-	// Send light data to pixel shader
 	BlurBufferType* blurPtr;
 	deviceContext->Map(screenSizeBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	blurPtr = (BlurBufferType*)mappedResource.pData;

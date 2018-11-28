@@ -34,16 +34,16 @@ struct OutputType
 OutputType main(InputType input)
 {
 	OutputType output;
-    input.tex.y += time;
+   // input.tex.y += time;
 
      // Calculate the normal vector against the world matrix only and normalise.
     output.normal = mul(input.normal, (float3x3) worldMatrix);
     output.normal = normalize(output.normal);
 
 
-    //input.tex.x = asin(output.normal.x) / (2.0 * 3.14159265359f) + 0.5;
+    input.tex.x = asin(output.normal.x) / (2.0 * 3.14159265359f) + 0.5;
 
-    //input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
+    input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
 
    /* input.tex.x = atan2(output.normal.x, output.normal.z) / (2.0 * 3.14159265359f) + 0.5;
 
