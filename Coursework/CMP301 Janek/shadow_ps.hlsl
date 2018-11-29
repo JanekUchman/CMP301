@@ -32,7 +32,7 @@ float4 main(InputType input) : SV_TARGET
 {
     float depthValue;
     float lightDepthValue;
-    float shadowMapBias = 0.001f;
+    float shadowMapBias = 0.005f;
     float4 colour = float4(0.f, 0.f, 0.f, 1.f);
     float4 textureColour = shaderTexture.Sample(diffuseSampler, input.tex);
 
