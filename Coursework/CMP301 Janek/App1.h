@@ -35,12 +35,15 @@ protected:
 	void gui();
 
 private:
-	const int whiteLight = 0;
-	const int plasmaLight = 1;
+	const int directionalLight1 = 0;
+	const int directionalLight2 = 1;
+	const int plasmaLight = 2;
 	//Variables
 	int tessFactor;
 	int amountOfParticles;
 	int numberOfBlurSamples;
+	float time;
+
 	//plasma variables
 	float plasmaFlowRate;
 	float plasmaColours[3];
@@ -66,16 +69,18 @@ private:
 	CubeMesh* cubeMesh;
 	OrthoMesh* motionBlurMesh;
 	//Render textures
-	RenderTexture* shadowMapTexture;
+	RenderTexture* shadowMapTexture[2];
 	RenderTexture* sceneTexture;
 	RenderTexture* motionBlurTexture;
 
 	//Lights
-	Light* lights[2];
+	Light* lights[3];
+	float lightPosition[3];
+	float lightDirections[3];
 
 	//functions
-	void DepthPass();
-	void ShadowPass();
+	void FirstShadowPass();
+	void SecondShadowPass();
 	void RenderScene();
 	void MotionBlurShaderPass();
 	void FinalPass();

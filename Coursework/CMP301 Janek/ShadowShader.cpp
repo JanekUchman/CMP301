@@ -43,8 +43,8 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 	// Load (+ compile) shader files
 	loadVertexShader(vsFilename);
 	loadPixelShader(psFilename);
-	DXUtility::CreateBufferDesc(sizeof(MatrixBufferType), &matrixBuffer, renderer);
-	DXUtility::CreateBufferDesc(sizeof(LightBufferType), &lightBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(LightBuffers::MatrixBufferType), &matrixBuffer, renderer);
+	DXUtility::CreateBufferDesc(sizeof(LightBuffers::LightBufferType), &lightBuffer, renderer);
 	
 	// Create a texture sampler state description.
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -76,45 +76,57 @@ void ShadowShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 }
 
 
-void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView*depthMap, Light* light)
+void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap[2], Light* lights[3])
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBufferType* dataPtr;
-	LightBufferType* lightPtr;
+	LightBuffers::MatrixBufferType* dataPtr;
+	LightBuffers::LightBufferType* lightPtr;
 	
 	// Transpose the matrices to prepare them for the shader.
 	XMMATRIX tworld = XMMatrixTranspose(worldMatrix);
 	XMMATRIX tview = XMMatrixTranspose(viewMatrix);
 	XMMATRIX tproj = XMMatrixTranspose(projectionMatrix);
-	XMMATRIX tLightViewMatrix = XMMatrixTranspose(light->getViewMatrix());
-	XMMATRIX tLightProjectionMatrix = XMMatrixTranspose(light->getOrthoMatrix());
+	XMMATRIX tLightViewMatrix[2] = { XMMatrixTranspose(lights[0]->getViewMatrix()), (lights[1]->getViewMatrix()) };
+	XMMATRIX tLightProjectionMatrix[2] = { XMMatrixTranspose(lights[0]->getOrthoMatrix()), XMMatrixTranspose(lights[1]->getOrthoMatrix()) };
 	
 	// Lock the constant buffer so it can be written to.
 	deviceContext->Map(matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	dataPtr = (MatrixBufferType*)mappedResource.pData;
-	dataPtr->world = tworld;// worldMatrix;
-	dataPtr->view = tview;
-	dataPtr->projection = tproj;
-	dataPtr->lightView = tLightViewMatrix;
-	dataPtr->lightProjection = tLightProjectionMatrix;
+	dataPtr = (LightBuffers::MatrixBufferType*)mappedResource.pData;
+	dataPtr->worldMatrix = tworld;// worldMatrix;
+	dataPtr->viewMatrix = tview;
+	dataPtr->projectionMatrix = tproj;
+	dataPtr->lightViewMatrix[0] = tLightViewMatrix[0];
+	dataPtr->lightViewMatrix[1] = tLightViewMatrix[1];
+
+	dataPtr->lightProjectionMatrix[0] = tLightProjectionMatrix[0];
+	dataPtr->lightProjectionMatrix[1] = tLightProjectionMatrix[1];
+
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
 	//Additional
 	// Send light data to pixel shader
 	deviceContext->Map(lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	lightPtr = (LightBufferType*)mappedResource.pData;
-	lightPtr->ambient = light->getAmbientColour();
-	lightPtr->diffuse = light->getDiffuseColour();
-	lightPtr->direction = light->getDirection();
-	lightPtr->padding = 0.f;
+	lightPtr = (LightBuffers::LightBufferType*)mappedResource.pData;
+	for (int i = 0; i < 3; i++)
+	{
+		lightPtr->ambient[i] = lights[i]->getAmbientColour();
+		lightPtr->diffuse[i] = lights[i]->getDiffuseColour();
+		lightPtr->direction[i] = lights[i]->getDirection();
+		lightPtr->lightPosition[i] = lights[i]->getPosition();
+	}
+	lightPtr->padding = { 0,0 };
+	
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
-	deviceContext->PSSetShaderResources(1, 1, &depthMap);
+	deviceContext->PSSetShaderResources(1, 1, &depthMap[0]);
+	deviceContext->PSSetShaderResources(2, 1, &depthMap[1]);
+
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
 	deviceContext->PSSetSamplers(1, 1, &sampleStateShadow);
+	deviceContext->PSSetSamplers(2, 1, &sampleStateShadow);
 }
 

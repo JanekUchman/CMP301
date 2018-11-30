@@ -1,5 +1,6 @@
 #pragma once
 #include "DXF.h"
+#include "LightBuffers.h"
 //Utility functions to save time in the shader classes
 class DXUtility
 {

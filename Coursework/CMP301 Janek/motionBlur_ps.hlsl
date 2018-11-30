@@ -53,7 +53,7 @@ float4 main(InputType input) : SV_TARGET
 {
 
     matrix viewProjectionMatrix = mul(viewMatrix, projectionMatrix);
-    matrix prevViewProjectionMatrix = transpose(mul(prevViewMatrix, prevProjectionMatrix));
+    matrix prevViewProjectionMatrix = (mul(prevViewMatrix, prevProjectionMatrix));
 
     //https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch27.html
      // Get the depth buffer value at this pixel.
