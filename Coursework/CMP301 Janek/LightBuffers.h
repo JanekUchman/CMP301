@@ -8,17 +8,20 @@ public:
 		XMMATRIX worldMatrix;
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;
-		XMMATRIX lightViewMatrix[2];
-		XMMATRIX lightProjectionMatrix[2];
+		XMMATRIX lightViewMatrix1;
+		XMMATRIX lightViewMatrix2;
+
+		XMMATRIX lightProjectionMatrix1;
+		XMMATRIX lightProjectionMatrix2;
+
 	};
 
 	struct LightBufferType
 	{
 		XMFLOAT4 ambient[3];
 		XMFLOAT4 diffuse[3];
-		XMFLOAT3 lightPosition[3];
-		XMFLOAT3 direction[3];
-		XMFLOAT2 padding;
+		XMFLOAT4 lightPosition[3];
+		XMFLOAT4 direction[3];
 	};
 };
 

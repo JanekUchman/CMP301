@@ -16,6 +16,7 @@
 #include "TessellationSphere.h"
 #include "OrthoMesh.h"
 #include "MotionBlurShader.h"
+#include "DepthShaderSphere.h"
 
 #define MAX_PARTICLES 40
 
@@ -39,9 +40,10 @@ private:
 	const int directionalLight2 = 1;
 	const int plasmaLight = 2;
 	//Variables
-	int tessFactor;
 	int amountOfParticles;
 	int numberOfBlurSamples;
+	int tessFactor;
+	float displacement;
 	float time;
 
 	//plasma variables
@@ -58,6 +60,7 @@ private:
 	ShadowShader* shadowShader;
 	DepthShader* depthShader;
 	MotionBlurShader* motionBlurShader;
+	DepthShaderSphere* depthShaderSphere;
 
 	//Meshs
 	SinglePointMesh* particleMesh[MAX_PARTICLES];
@@ -71,6 +74,7 @@ private:
 	//Render textures
 	RenderTexture* shadowMapTexture[2];
 	RenderTexture* sceneTexture;
+	RenderTexture* depthSceneTexture;
 	RenderTexture* motionBlurTexture;
 
 	//Lights
@@ -84,5 +88,6 @@ private:
 	void RenderScene();
 	void MotionBlurShaderPass();
 	void FinalPass();
+	void SceneDepthPass();
 
 };

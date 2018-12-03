@@ -30,6 +30,11 @@ MotionBlurShader::~MotionBlurShader()
 		screenSizeBuffer->Release();
 		screenSizeBuffer = 0;
 	}
+	if (viewProjBuffer)
+	{
+		viewProjBuffer->Release();
+		viewProjBuffer = 0;
+	}
 
 	//Release base shader components
 	BaseShader::~BaseShader();
@@ -80,11 +85,12 @@ void MotionBlurShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 }
 
 
-void MotionBlurShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* texture, float samples)
+void MotionBlurShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, ID3D11ShaderResourceView* sceneTexture, ID3D11ShaderResourceView* depthTexture, float samples, XMVECTOR cameraRotationVector)
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	XMMATRIX tworld, tview, tproj;
+
 
 	// Transpose the matrices to prepare them for the shader.
 	tworld = XMMatrixTranspose(worldMatrix);
@@ -99,6 +105,12 @@ void MotionBlurShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
 
+	XMVECTOR dot = XMVector3Dot(cameraRotationVector, prevCameraVector);
+	XMFLOAT4 v2F;    //the float where we copy the v2 vector members
+	XMStoreFloat4(&v2F, dot);
+	
+	//samples *= acosf(v2F.x);
+	
 	//Additional
 	BlurBufferType* blurPtr;
 	deviceContext->Map(screenSizeBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -119,8 +131,11 @@ void MotionBlurShader::setShaderParameters(ID3D11DeviceContext* deviceContext, c
 	deviceContext->PSSetConstantBuffers(1, 1, &viewProjBuffer);
 
 	// Set shader texture resource in the pixel shader.
-	deviceContext->PSSetShaderResources(0, 1, &texture);
+	deviceContext->PSSetShaderResources(0, 1, &sceneTexture);
+	deviceContext->PSSetShaderResources(1, 1, &depthTexture);
 	deviceContext->PSSetSamplers(0, 1, &sampleState);
+
+	prevCameraVector = cameraRotationVector;
 
 	prevProjectionMatrix = projectionMatrix;
 	prevViewMatrix = viewMatrix;

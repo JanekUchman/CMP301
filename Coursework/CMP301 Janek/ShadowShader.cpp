@@ -15,6 +15,11 @@ ShadowShader::~ShadowShader()
 		sampleState->Release();
 		sampleState = 0;
 	}
+	if (sampleStateShadow)
+	{
+		sampleStateShadow->Release();
+		sampleStateShadow = 0;
+	}
 	if (matrixBuffer)
 	{
 		matrixBuffer->Release();
@@ -95,11 +100,11 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	dataPtr->worldMatrix = tworld;// worldMatrix;
 	dataPtr->viewMatrix = tview;
 	dataPtr->projectionMatrix = tproj;
-	dataPtr->lightViewMatrix[0] = tLightViewMatrix[0];
-	dataPtr->lightViewMatrix[1] = tLightViewMatrix[1];
+	dataPtr->lightViewMatrix1 = tLightViewMatrix[0];
+	dataPtr->lightViewMatrix2 = tLightViewMatrix[1];
 
-	dataPtr->lightProjectionMatrix[0] = tLightProjectionMatrix[0];
-	dataPtr->lightProjectionMatrix[1] = tLightProjectionMatrix[1];
+	dataPtr->lightProjectionMatrix1 = tLightProjectionMatrix[0];
+	dataPtr->lightProjectionMatrix2 = tLightProjectionMatrix[1];
 
 	deviceContext->Unmap(matrixBuffer, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &matrixBuffer);
@@ -112,10 +117,9 @@ void ShadowShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const
 	{
 		lightPtr->ambient[i] = lights[i]->getAmbientColour();
 		lightPtr->diffuse[i] = lights[i]->getDiffuseColour();
-		lightPtr->direction[i] = lights[i]->getDirection();
-		lightPtr->lightPosition[i] = lights[i]->getPosition();
+		lightPtr->direction[i] = XMFLOAT4(lights[i]->getDirection().x, lights[i]->getDirection().y, lights[i]->getDirection().z, 0);
+		lightPtr->lightPosition[i] = XMFLOAT4(lights[i]->getPosition().x, lights[i]->getPosition().y, lights[i]->getPosition().z, 0);
 	}
-	lightPtr->padding = { 0,0 };
 	
 	deviceContext->Unmap(lightBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &lightBuffer);

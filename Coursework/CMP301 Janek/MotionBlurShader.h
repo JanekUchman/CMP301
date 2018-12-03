@@ -32,12 +32,11 @@ public:
 	MotionBlurShader(ID3D11Device* device, HWND hwnd);
 	~MotionBlurShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, float samples);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* sceneTexture, ID3D11ShaderResourceView* depthTexture, float samples, XMVECTOR cameraRotationVector);
 
 private:
 	void initShader(WCHAR*, WCHAR*);
 
-private:
 	ID3D11Buffer* matrixBuffer;
 	ID3D11SamplerState* sampleState;
 	ID3D11Buffer* screenSizeBuffer;
@@ -45,4 +44,5 @@ private:
 
 	XMMATRIX prevViewMatrix;
 	XMMATRIX prevProjectionMatrix;
+	XMVECTOR prevCameraVector;
 };

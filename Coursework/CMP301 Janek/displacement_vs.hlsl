@@ -13,7 +13,8 @@ cbuffer MatrixBuffer : register(b0)
 cbuffer TimeBuffer : register(b1)
 {
     float time;
-    float3 padding;
+	float displacement;
+    float2 padding;
 };
 
 struct InputType
@@ -26,7 +27,9 @@ struct InputType
 struct OutputType
 {
 	float4 position : SV_POSITION;
-	float2 tex : TEXCOORD0;
+    float4 depthPosition : TEXCOORD0;
+
+	float2 tex : TEXCOORD2;
 	float3 normal : NORMAL;
 	float3 worldPosition : TEXCOORD1;
 };
@@ -45,16 +48,13 @@ OutputType main(InputType input)
 
     input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
 
-   /* input.tex.x = atan2(output.normal.x, output.normal.z) / (2.0 * 3.14159265359f) + 0.5;
 
-    input.tex.y = asin(output.normal.y) / 3.14159265359f + 0.5 + time;
-*/
 
 
 
 
 	float4 textureColour = texture0.SampleLevel(sampler0, input.tex, 0);
-	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) /10;
+	float averageDisplacement = (textureColour.x + textureColour.y + textureColour.z ) *displacement;
 
    
 
@@ -69,7 +69,7 @@ OutputType main(InputType input)
 	// Store the texture coordinates for the pixel shader.
 	output.tex = input.tex;
 
-	
+	output.depthPosition = output.position;
 
 	output.worldPosition = mul(input.position, worldMatrix).xyz;
 

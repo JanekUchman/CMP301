@@ -19,6 +19,7 @@ struct InputType
 	float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
 	float3 worldPosition : TEXCOORD1;
+	float4 depthPosition : TEXCOORD2;
 };
 
 float4 main(InputType input) : SV_TARGET

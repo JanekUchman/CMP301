@@ -43,6 +43,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	shadowShader = new ShadowShader(renderer->getDevice(), hwnd);
 	motionBlurShader = new MotionBlurShader(renderer->getDevice(), hwnd);
+	depthShaderSphere = new DepthShaderSphere(renderer->getDevice(), hwnd);
 
 	//Set values
 	tessFactor = 6;
@@ -52,10 +53,12 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	plasmaColours[2] = 0.25f;
 	particleDirectionalSpeed = -1;
 	time = 0;
+	displacement = 0.1f;
 	plasmaInvert = true;
 	renderBox = true;
 	amountOfParticles = 20;
 	numberOfBlurSamples = 1;
+	tessFactor = 16;
 	//Set lights
 	lights[0] = new Light;
 	lights[1] = new Light;
@@ -64,27 +67,28 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	//set up render textures
 	int shadowmapWidth = 4096;
 	int shadowmapHeight = 4096;
-	int sceneWidth = 100;
-	int sceneHeight = 100;
+	int sceneWidth = 20;
+	int sceneHeight = 20;
 
 	shadowMapTexture[directionalLight1] = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
 	shadowMapTexture[directionalLight2] = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
 	sceneTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	depthSceneTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 	motionBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 
 
 	// Setup directional light
-	lights[directionalLight1]->setPosition(0, 20, -10.0f);
+	lights[directionalLight1]->setPosition(0, 10, -5.0f);
 	lights[directionalLight1]->setDirection(0.7f, -1.0f, 0.7f);
 	lights[directionalLight1]->setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	lights[directionalLight1]->setDiffuseColour(0.3f, 0.3f, 0.3f, 1.0f);
+	lights[directionalLight1]->setDiffuseColour(0.2f, 0.2f, 0.2f, 1.0f);
 	lights[directionalLight1]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	// Setup directional light
 	lights[directionalLight2]->setPosition(0, 20, -10.0f);
 	lights[directionalLight2]->setDirection(-0.7f, -1.0f, 1.5f);
 	lights[directionalLight2]->setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	lights[directionalLight2]->setDiffuseColour(0.3f, 0.3f, 0.3f, 1.0f);
+	lights[directionalLight2]->setDiffuseColour(0.2f, 0.2f, 0.2f, 1.0f);
 	lights[directionalLight2]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	// setup plasma light
@@ -109,9 +113,33 @@ App1::~App1()
 	BaseApplication::~BaseApplication();
 
 	// Release the Direct3D object.
-	//TODO deletes 
+	//Delete lights
 	delete lights[0];
 	delete lights[1];
+	delete lights[2];
+	//Delete shaders
+	delete particleShader;
+	delete tessShader;
+	delete displacementShader;
+	delete textureShader;
+	delete shadowShader;
+	delete depthShader;
+	delete motionBlurShader;
+	delete depthShaderSphere;
+	//delete meshes
+	for (int i = 0; i < MAX_PARTICLES; i ++)
+		delete particleMesh[i];
+	delete icosahedronMesh;
+	delete tessMesh;
+	delete floorMesh;
+	delete sphereMesh;
+	delete cubeMesh;
+	delete motionBlurMesh;
+	//delete textures
+	delete shadowMapTexture[0];
+	delete shadowMapTexture[1];
+	delete sceneTexture;
+	delete motionBlurTexture;
 }
 
 
@@ -141,13 +169,15 @@ bool App1::render()
 	float sinValue = -abs(sin(time));
 	lights[plasmaLight]->setPosition(lightPosition[0], lightPosition[1], lightPosition[2]);
 	lights[plasmaLight]->setDiffuseColour(plasmaColours[0]+(sinValue*plasmaColours[0]), plasmaColours[1]+ (sinValue*plasmaColours[1]), plasmaColours[2] + (sinValue*plasmaColours[2]), plasmaColours[3]);
-	lights[directionalLight2]->setDirection(lightDirections[0], lightDirections[1], lightDirections[2]);
+	//lights[directionalLight2]->setDirection(lightDirections[0], lightDirections[1], lightDirections[2]);
 
 	camera->update();
 
 	FirstShadowPass();
 
 	SecondShadowPass();
+
+	SceneDepthPass();
 
 	RenderScene();
 
@@ -175,8 +205,8 @@ void App1::FirstShadowPass()
 
 	worldMatrix = renderer->getWorldMatrix();
 	sphereMesh->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
+	depthShaderSphere->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, displacement);
+	depthShaderSphere->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
 
 	if (renderBox)
 	{
@@ -207,8 +237,8 @@ void App1::SecondShadowPass()
 
 	worldMatrix = renderer->getWorldMatrix();
 	sphereMesh->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
+	depthShaderSphere->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, displacement);
+	depthShaderSphere->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
 
 	if (renderBox)
 	{
@@ -223,6 +253,47 @@ void App1::SecondShadowPass()
 	renderer->resetViewport();
 
 }
+void App1::SceneDepthPass()
+{
+	depthSceneTexture->setRenderTarget(renderer->getDeviceContext());
+	depthSceneTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	XMMATRIX worldMatrix = renderer->getWorldMatrix();
+	XMMATRIX viewMatrix = camera->getViewMatrix();
+	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
+
+	ID3D11ShaderResourceView* depthMaps[2] = { shadowMapTexture[0]->getShaderResourceView(), shadowMapTexture[1]->getShaderResourceView() };
+
+	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
+	floorMesh->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
+	depthShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
+
+	/*worldMatrix = XMMatrixTranslation(-2.5, 0, 0);
+	icosahedronMesh->sendData(renderer->getDeviceContext());
+	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
+	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
+
+	worldMatrix = renderer->getWorldMatrix();
+	icosahedronMesh->sendData(renderer->getDeviceContext());
+	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
+	depthShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
+
+	worldMatrix = renderer->getWorldMatrix();
+	// Send geometry data, set shader parameters, render object with shader
+
+	if (renderBox)
+	{
+		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(2, -3, 6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
+		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
+		cubeMesh->sendData(renderer->getDeviceContext());
+		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
+		depthShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
+	}
+	renderer->setBackBufferRenderTarget();
+}
+
 void App1::RenderScene()
 {
 
@@ -248,9 +319,9 @@ void App1::RenderScene()
 	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
 
 	worldMatrix = renderer->getWorldMatrix();
-	sphereMesh->sendData(renderer->getDeviceContext());
-	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, plasmaColours, plasmaInvert);
-	displacementShader->render(renderer->getDeviceContext(), sphereMesh->getIndexCount());
+	icosahedronMesh->sendData(renderer->getDeviceContext());
+	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, plasmaColours, plasmaInvert, displacement, tessFactor);
+	displacementShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
 
 	worldMatrix = renderer->getWorldMatrix();
 	// Send geometry data, set shader parameters, render object with shader
@@ -301,7 +372,8 @@ void App1::MotionBlurShaderPass()
 	// Render for Vertical Blur
 	renderer->setZBuffer(false);
 	motionBlurMesh->sendData(renderer->getDeviceContext());
-	motionBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, sceneTexture->getShaderResourceView(), numberOfBlurSamples);
+	motionBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, sceneTexture->getShaderResourceView(), depthSceneTexture->getShaderResourceView(),
+		numberOfBlurSamples, camera->getRotation());
 	motionBlurShader->render(renderer->getDeviceContext(), motionBlurMesh->getIndexCount());
 	renderer->setZBuffer(true);
 }
@@ -350,10 +422,13 @@ void App1::gui()
 	ImGui::Checkbox("Invert plasma colours: ", &plasmaInvert);
 	ImGui::Checkbox("Render box: ", &renderBox);
 	ImGui::SliderInt("Amount of particles", &amountOfParticles, 0, MAX_PARTICLES);
-	ImGui::SliderInt("Blur samples", &numberOfBlurSamples, 1, 10);
+	ImGui::SliderInt("Blur samples", &numberOfBlurSamples, 1, 3);
 	ImGui::ColorPicker3("plasma colour", plasmaColours);
 	ImGui::SliderFloat3("Plasma light position", lightPosition, -20, 20);
 	ImGui::SliderFloat3("Directional light direction", lightDirections, -2, 2);
+	ImGui::SliderFloat("Sphere displacement", &displacement, -1, 1);
+	ImGui::SliderInt("Sphere tessellation", &tessFactor, 0, 64);
+
 
 	// Render UI
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);

@@ -23,6 +23,21 @@ ParticleShader::~ParticleShader()
 		matrixBuffer->Release();
 		matrixBuffer = 0;
 	}
+	if (lightBuffer)
+	{
+		lightBuffer->Release();
+		lightBuffer = 0;
+	}
+	if (colourBuffer)
+	{
+		colourBuffer->Release();
+		colourBuffer = 0;
+	}
+	if (geometryBuffer)
+	{
+		geometryBuffer->Release();
+		geometryBuffer = 0;
+	}
 
 	// Release the layout.
 	if (layout)

@@ -1,4 +1,6 @@
-Texture2D Texture0 : register(t0);
+Texture2D sceneTexture : register(t0);
+Texture2D depthTexture : register(t1);
+
 SamplerState Sampler0 : register(s0);
 
 cbuffer ScreenSizeBuffer : register(b0)
@@ -52,12 +54,12 @@ struct InputType
 float4 main(InputType input) : SV_TARGET
 {
 
-    matrix viewProjectionMatrix = mul(viewMatrix, projectionMatrix);
+    matrix viewProjectionMatrix = (mul(viewMatrix, projectionMatrix));
     matrix prevViewProjectionMatrix = (mul(prevViewMatrix, prevProjectionMatrix));
 
     //https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch27.html
      // Get the depth buffer value at this pixel.
-    float zOverW = Texture0.Sample(Sampler0, input.tex).w;
+    float zOverW = depthTexture.Sample(Sampler0, input.tex).w;
     //range -1 to 1.
     float4 viewportPos = float4(input.tex.x * 2 - 1, (1 - input.tex.y) * 2 - 1, zOverW, 1);
     // Transform by the view-projection inverse.
@@ -76,12 +78,13 @@ float4 main(InputType input) : SV_TARGET
     float2 velocity = (currentPos - previousPos) *2.f;
 
     // Get the initial color at this pixel.
-    float4 colour = Texture0.Sample(Sampler0, input.tex);
+    float4 colour = sceneTexture.Sample(Sampler0, input.tex);
     input.tex += velocity;
-    for (int i = 1; i < numSamples; ++i, input.tex += velocity)
+    for (int i = 1; i < numSamples; ++i)
     {
+        input.tex += velocity;
         // Sample the color buffer along the velocity vector.
-        float4 currentColour = Texture0.Sample(Sampler0, input.tex);
+        float4 currentColour = sceneTexture.Sample(Sampler0, input.tex);
         // Add the current color to our color sum.
         colour += currentColour;
     }

@@ -10,6 +10,8 @@ IcosahedronMesh::IcosahedronMesh(ID3D11Device* device, ID3D11DeviceContext* devi
 
 IcosahedronMesh::~IcosahedronMesh()
 {
+	
+
 }
 //void IcosahedronMesh::Subdivide(unsigned long* indices, VertexType* vertices)
 //{
