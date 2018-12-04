@@ -8,15 +8,16 @@
 #include "TessellationQuad.h"
 #include "TessellationShader.h"
 #include "IcosahedronMesh.h"
-#include "DisplacementShader.h"
+#include "DisplacementTessellationShader.h"
 #include "TextureShader.h"
 #include "ShadowShader.h"
 #include "CubeMesh.h"
 #include "DepthShader.h"
-#include "TessellationSphere.h"
 #include "OrthoMesh.h"
-#include "MotionBlurShader.h"
+#include "DepthOfFieldShader.h"
 #include "DepthShaderSphere.h"
+#include "VerticalBlurShader.h"
+#include "HorizontalBlurShader.h"
 
 #define MAX_PARTICLES 40
 
@@ -36,12 +37,12 @@ protected:
 	void gui();
 
 private:
+	//Light consts to help reading of light arrays
 	const int directionalLight1 = 0;
 	const int directionalLight2 = 1;
 	const int plasmaLight = 2;
 	//Variables
 	int amountOfParticles;
-	int numberOfBlurSamples;
 	int tessFactor;
 	float displacement;
 	float time;
@@ -54,40 +55,45 @@ private:
 	bool renderBox;
 	//Shaders
 	ParticleShader* particleShader;
-	TessellationShader* tessShader;
-	DisplacementShader* displacementShader;
+	//Plasma sphere shader, displaces and tessellates
+	DisplacementTessellationShader* displacementTessShader;
+	//For rendering the final scene
 	TextureShader* textureShader;
+	//For rendering anything affected by lighting/shadows
 	ShadowShader* shadowShader;
+	//For getting light/scene depths
 	DepthShader* depthShader;
-	MotionBlurShader* motionBlurShader;
+	DepthOfFieldShader* depthOfFieldShader;
+	//Get a different depth shader for the sphere's shadow
 	DepthShaderSphere* depthShaderSphere;
+	HorizontalBlurShader* horizontalBlurShader;
+	VerticalBlurShader* verticalBlurShader;
 
 	//Meshs
 	SinglePointMesh* particleMesh[MAX_PARTICLES];
 	IcosahedronMesh* icosahedronMesh;
-	TessellationSphere* tessMesh;
-
 	PlaneMesh* floorMesh;
 	SphereMesh* sphereMesh;
 	CubeMesh* cubeMesh;
-	OrthoMesh* motionBlurMesh;
+	OrthoMesh* depthOfFieldMesh;
+
 	//Render textures
 	RenderTexture* shadowMapTexture[2];
 	RenderTexture* sceneTexture;
-	RenderTexture* depthSceneTexture;
-	RenderTexture* motionBlurTexture;
+	RenderTexture* horizontalBlurTexture;
+	RenderTexture* verticalBlurTexture;
+	RenderTexture* depthOfFieldTexture;
 
 	//Lights
 	Light* lights[3];
-	float lightPosition[3];
-	float lightDirections[3];
 
 	//functions
 	void FirstShadowPass();
 	void SecondShadowPass();
 	void RenderScene();
-	void MotionBlurShaderPass();
+	void DepthOfFieldShaderPass();
 	void FinalPass();
-	void SceneDepthPass();
+	void HorizontalBlurPass();
+	void VerticalBlurPass();
 
 };

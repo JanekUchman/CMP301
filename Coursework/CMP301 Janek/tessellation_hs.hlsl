@@ -31,12 +31,12 @@ ConstantOutputType PatchConstantFunction(InputPatch<InputType, 3> inputPatch, ui
     ConstantOutputType output;
 
     // Set the tessellation factors for the three edges of the triangle.
-    output.edges[0] = tessellationFactor; // tessellationFactor;
-    output.edges[1] = tessellationFactor; //tessellationFactor;
-	output.edges[2] = tessellationFactor; // tessellationFactor;
+    output.edges[0] = tessellationFactor; 
+    output.edges[1] = tessellationFactor; 
+	output.edges[2] = tessellationFactor; 
 
     // Set the tessellation factor for tessallating inside the triangle.
-    output.inside = tessellationFactor; // tessellationFactor;
+    output.inside = tessellationFactor; 
 
     return output;
 }

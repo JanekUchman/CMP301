@@ -1,14 +1,14 @@
-#include "DisplacementShader.h"
+#include "DisplacementTessellationShader.h"
 
-DisplacementShader::DisplacementShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
+DisplacementTessellationShader::DisplacementTessellationShader(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
 	initShader(L"tessellation_vs.cso", L"tessellation_hs.cso", L"tessellation_ds.cso", L"tessellation_ps.cso");
 }
 
 
-DisplacementShader::~DisplacementShader()
+DisplacementTessellationShader::~DisplacementTessellationShader()
 {
-	// Release the sampler state.
+
 	if (sampleState)
 	{
 		sampleState->Release();
@@ -21,14 +21,12 @@ DisplacementShader::~DisplacementShader()
 		sampleStateDisplacement = 0;
 	}
 
-	// Release the matrix constant buffer.
 	if (matrixBuffer)
 	{
 		matrixBuffer->Release();
 		matrixBuffer = 0;
 	}
 
-	// Release the layout.
 	if (layout)
 	{
 		layout->Release();
@@ -59,7 +57,7 @@ DisplacementShader::~DisplacementShader()
 	BaseShader::~BaseShader();
 }
 
-void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename)
+void DisplacementTessellationShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR* dsFilename, WCHAR* psFilename)
 {
 	initShader(vsFilename, psFilename);
 
@@ -70,7 +68,7 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* hsFilename, WCHAR*
 	
 }
 
-void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
+void DisplacementTessellationShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 {
 	// InitShader must be overwritten and it will load both vertex and pixel shaders + setup buffers
 // Load (+ compile) shader files
@@ -89,7 +87,7 @@ void DisplacementShader::initShader(WCHAR* vsFilename, WCHAR* psFilename)
 
 
 
-void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, 
+void DisplacementTessellationShader::setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix, 
 	ID3D11ShaderResourceView* displacementMap,  float deltaTime, float lavaColours[3], bool lavaInvert, float displacement, int tessFactor)
 {
 	HRESULT result;
@@ -136,12 +134,14 @@ void DisplacementShader::setShaderParameters(ID3D11DeviceContext* deviceContext,
 	colourPtr->red = lavaColours[0];
 	colourPtr->green = lavaColours[1];
 	colourPtr->blue = lavaColours[2];
+	//Lava invert is handled in the pixel shader, pass it in as a float
 	colourPtr->invert = lavaInvert ? 1 : 0;
 	deviceContext->Unmap(colourBuffer, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, &colourBuffer);
 
 
 	// Set shader texture resource in the pixel shader.
+	//The displacement is needed in both the pixel and domain shader for colouring + displacement
 	deviceContext->DSSetShaderResources(0, 1, &displacementMap);
 	deviceContext->DSSetSamplers(0, 1, &sampleStateDisplacement);
 

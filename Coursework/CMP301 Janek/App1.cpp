@@ -16,34 +16,35 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	for (int i = 0; i < MAX_PARTICLES; i++)
 	{
 		particleMesh[i] = new SinglePointMesh(renderer->getDevice(), renderer->getDeviceContext());
+		//What rough area do we want the particles to start appearing
 		particleMesh[i]->setPosition(XMINT3(10, 10, 10));
+		//What their max speed (y is always either negative or positive)
 		particleMesh[i]->setSpeed(XMINT3(2, 2, 2));
 	}
 
 	icosahedronMesh = new IcosahedronMesh(renderer->getDevice(), renderer->getDeviceContext());
-	tessMesh = new TessellationSphere(renderer->getDevice(), renderer->getDeviceContext(), 20);
 	floorMesh = new PlaneMesh(renderer->getDevice(), renderer->getDeviceContext());
 	sphereMesh = new SphereMesh(renderer->getDevice(), renderer->getDeviceContext());
 	cubeMesh = new CubeMesh(renderer->getDevice(), renderer->getDeviceContext());
-	motionBlurMesh = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight);
+	depthOfFieldMesh = new OrthoMesh(renderer->getDevice(), renderer->getDeviceContext(), screenWidth, screenHeight);
 
 	//Load texture
-	textureMgr->loadTexture("brick", L"res/brick1.dds");
 	textureMgr->loadTexture("plasmaHM", L"res/plasma_height_2.png");
 	textureMgr->loadTexture("particle", L"res/light_particle_1.png");
 	textureMgr->loadTexture("floor", L"res/floor_3.jpg");
-	textureMgr->loadTexture("box", L"res/box_1.jpg");
+	textureMgr->loadTexture("box", L"res/box_2.jpg");
 	
 
 	//Create shaders
 	particleShader = new ParticleShader(renderer->getDevice(), hwnd);
-	tessShader = new TessellationShader(renderer->getDevice(), hwnd);
-	displacementShader = new DisplacementShader(renderer->getDevice(), hwnd);
+	displacementTessShader = new DisplacementTessellationShader(renderer->getDevice(), hwnd);
 	textureShader = new TextureShader(renderer->getDevice(), hwnd);
 	depthShader = new DepthShader(renderer->getDevice(), hwnd);
 	shadowShader = new ShadowShader(renderer->getDevice(), hwnd);
-	motionBlurShader = new MotionBlurShader(renderer->getDevice(), hwnd);
+	depthOfFieldShader = new DepthOfFieldShader(renderer->getDevice(), hwnd);
 	depthShaderSphere = new DepthShaderSphere(renderer->getDevice(), hwnd);
+	horizontalBlurShader = new HorizontalBlurShader(renderer->getDevice(), hwnd);
+	verticalBlurShader = new VerticalBlurShader(renderer->getDevice(), hwnd);
 
 	//Set values
 	tessFactor = 6;
@@ -57,7 +58,6 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	plasmaInvert = true;
 	renderBox = true;
 	amountOfParticles = 20;
-	numberOfBlurSamples = 1;
 	tessFactor = 16;
 	//Set lights
 	lights[0] = new Light;
@@ -73,38 +73,30 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 	shadowMapTexture[directionalLight1] = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
 	shadowMapTexture[directionalLight2] = new RenderTexture(renderer->getDevice(), shadowmapWidth, shadowmapHeight, 0.1f, 100.f);
 	sceneTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-	depthSceneTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-	motionBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
-
+	depthOfFieldTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	verticalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
+	horizontalBlurTexture = new RenderTexture(renderer->getDevice(), screenWidth, screenHeight, SCREEN_NEAR, SCREEN_DEPTH);
 
 	// Setup directional light
-	lights[directionalLight1]->setPosition(0, 10, -5.0f);
-	lights[directionalLight1]->setDirection(0.7f, -1.0f, 0.7f);
+	lights[directionalLight1]->setPosition(0, 5, 5.0f);
+	lights[directionalLight1]->setDirection(0.8f, -1.0f, -1.3f);
 	lights[directionalLight1]->setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	lights[directionalLight1]->setDiffuseColour(0.2f, 0.2f, 0.2f, 1.0f);
+	lights[directionalLight1]->setDiffuseColour(0.5f, 0.5f, 0.5f, 1.0f);
 	lights[directionalLight1]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	// Setup directional light
-	lights[directionalLight2]->setPosition(0, 20, -10.0f);
-	lights[directionalLight2]->setDirection(-0.7f, -1.0f, 1.5f);
+	lights[directionalLight2]->setPosition(0, 5, -5.0f);
+	lights[directionalLight2]->setDirection(0.8f, -1.0f, 0.9f);
 	lights[directionalLight2]->setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
-	lights[directionalLight2]->setDiffuseColour(0.2f, 0.2f, 0.2f, 1.0f);
+	lights[directionalLight2]->setDiffuseColour(0.5f, 0.5f, 0.5f, 1.0f);
 	lights[directionalLight2]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 
 	// setup plasma light
-	lights[plasmaLight]->setPosition(-2.0f, 2.0f, -2.0f);
+	lights[plasmaLight]->setPosition(-80.0f, 2.0f, 0.0f);
+	lights[plasmaLight]->setDirection(-0.7f, -1.0f, 1.5f);
 	lights[plasmaLight]->setAmbientColour(0.0f, 0.0f, 0.0f, 1.0f);
 	lights[plasmaLight]->setDiffuseColour(plasmaColours[0], plasmaColours[1], plasmaColours[2], plasmaColours[3]);
-
-
-	lightPosition[0] = lights[plasmaLight]->getPosition().x;
-	lightPosition[1] = lights[plasmaLight]->getPosition().y;
-	lightPosition[2] = lights[plasmaLight]->getPosition().z;
-
-	lightDirections[0] = lights[directionalLight2]->getDirection().x;
-	lightDirections[1] = lights[directionalLight2]->getDirection().y;
-	lightDirections[2] = lights[directionalLight2]->getDirection().z;
-
+	lights[plasmaLight]->generateOrthoMatrix(sceneWidth, sceneHeight, 0.1f, 100.f);
 }
 
 App1::~App1()
@@ -119,27 +111,30 @@ App1::~App1()
 	delete lights[2];
 	//Delete shaders
 	delete particleShader;
-	delete tessShader;
-	delete displacementShader;
+	delete displacementTessShader;
 	delete textureShader;
 	delete shadowShader;
 	delete depthShader;
-	delete motionBlurShader;
+	delete depthOfFieldShader;
 	delete depthShaderSphere;
+	delete horizontalBlurShader;
+	delete verticalBlurShader;
 	//delete meshes
 	for (int i = 0; i < MAX_PARTICLES; i ++)
 		delete particleMesh[i];
 	delete icosahedronMesh;
-	delete tessMesh;
 	delete floorMesh;
 	delete sphereMesh;
 	delete cubeMesh;
-	delete motionBlurMesh;
+	delete depthOfFieldMesh;
+	
 	//delete textures
 	delete shadowMapTexture[0];
 	delete shadowMapTexture[1];
 	delete sceneTexture;
-	delete motionBlurTexture;
+	delete depthOfFieldTexture;
+	delete horizontalBlurTexture;
+	delete verticalBlurTexture;
 }
 
 
@@ -165,24 +160,30 @@ bool App1::frame()
 
 bool App1::render()
 {
+	//Modify the light colour based on a sin wave, creating a breathing light
 	time += timer->getTime();
-	float sinValue = -abs(sin(time));
-	lights[plasmaLight]->setPosition(lightPosition[0], lightPosition[1], lightPosition[2]);
+	//Divide by a value to increase the time between pulses
+	float sinValue = -abs(sin(time/2));
+	//Increase/decrease the larger values of rgb more than the smaller ones by adding the multiple of the sin value
 	lights[plasmaLight]->setDiffuseColour(plasmaColours[0]+(sinValue*plasmaColours[0]), plasmaColours[1]+ (sinValue*plasmaColours[1]), plasmaColours[2] + (sinValue*plasmaColours[2]), plasmaColours[3]);
-	//lights[directionalLight2]->setDirection(lightDirections[0], lightDirections[1], lightDirections[2]);
 
 	camera->update();
 
+	//Get the directional lights shadows
 	FirstShadowPass();
-
 	SecondShadowPass();
 
-	SceneDepthPass();
-
+	//Render the actual scene to a render texture
 	RenderScene();
 
-	MotionBlurShaderPass();
+	//Get a blur of the scene
+	HorizontalBlurPass();
+	VerticalBlurPass();
+	
+	//Modify the scene based on the camera depth
+	DepthOfFieldShaderPass();
 
+	//Render the final product to an orthomesh
 	FinalPass();
 
 	return true;
@@ -190,9 +191,11 @@ bool App1::render()
 
 void App1::FirstShadowPass()
 {
+	//Change the back buffer to a render texture
 	shadowMapTexture[directionalLight1]->setRenderTarget(renderer->getDeviceContext());
 	shadowMapTexture[directionalLight1]->clearRenderTarget(renderer->getDeviceContext(), 1.0f, 1.0f, 1.0f, 1.0f);
 
+	//Get the scene from the light's POV
 	lights[directionalLight1]->generateViewMatrix();
 	XMMATRIX viewMatrix = lights[directionalLight1]->getViewMatrix();
 	XMMATRIX projectionMatrix = lights[directionalLight1]->getOrthoMatrix();
@@ -220,11 +223,14 @@ void App1::FirstShadowPass()
 	renderer->setBackBufferRenderTarget();
 	renderer->resetViewport();
 }
+
 void App1::SecondShadowPass()
 {
+	//Change the back buffer to a render texture
 	shadowMapTexture[directionalLight2]->setRenderTarget(renderer->getDeviceContext());
 	shadowMapTexture[directionalLight2]->clearRenderTarget(renderer->getDeviceContext(), 1.0f, 1.0f, 1.0f, 1.0f);
 
+	//Get the scene from the light's POV
 	lights[directionalLight2]->generateViewMatrix();
 	XMMATRIX viewMatrix = lights[directionalLight2]->getViewMatrix();
 	XMMATRIX projectionMatrix = lights[directionalLight2]->getOrthoMatrix();
@@ -253,51 +259,11 @@ void App1::SecondShadowPass()
 	renderer->resetViewport();
 
 }
-void App1::SceneDepthPass()
-{
-	depthSceneTexture->setRenderTarget(renderer->getDeviceContext());
-	depthSceneTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
 
-	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
-	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX viewMatrix = camera->getViewMatrix();
-	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
-
-	ID3D11ShaderResourceView* depthMaps[2] = { shadowMapTexture[0]->getShaderResourceView(), shadowMapTexture[1]->getShaderResourceView() };
-
-	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
-	floorMesh->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
-
-	/*worldMatrix = XMMatrixTranslation(-2.5, 0, 0);
-	icosahedronMesh->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
-
-	worldMatrix = renderer->getWorldMatrix();
-	icosahedronMesh->sendData(renderer->getDeviceContext());
-	depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-	depthShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
-
-	worldMatrix = renderer->getWorldMatrix();
-	// Send geometry data, set shader parameters, render object with shader
-
-	if (renderBox)
-	{
-		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(2, -3, 6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
-		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
-		cubeMesh->sendData(renderer->getDeviceContext());
-		depthShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix);
-		depthShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
-	}
-	renderer->setBackBufferRenderTarget();
-}
 
 void App1::RenderScene()
 {
-
-
+	//Save the scene to a render texture for post-processing
 	sceneTexture->setRenderTarget(renderer->getDeviceContext());
 	sceneTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
 
@@ -306,37 +272,35 @@ void App1::RenderScene()
 	XMMATRIX viewMatrix = camera->getViewMatrix();
 	XMMATRIX projectionMatrix = renderer->getProjectionMatrix();
 
-	ID3D11ShaderResourceView* depthMaps[2] = { shadowMapTexture[0]->getShaderResourceView(), shadowMapTexture[1]->getShaderResourceView() };
-
+	//The floor is just being lit/shaded 
 	worldMatrix = XMMatrixMultiply(XMMatrixTranslation(-50, -20, -50), XMMatrixScaling(0.1f, 0.1f, 0.1f));
 	floorMesh->sendData(renderer->getDeviceContext());
-	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), depthMaps, lights);
+	shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("floor"), shadowMapTexture[0]->getShaderResourceView(), shadowMapTexture[1]->getShaderResourceView(), lights);
 	shadowShader->render(renderer->getDeviceContext(), floorMesh->getIndexCount());
 
-	/*worldMatrix = XMMatrixTranslation(-2.5, 0, 0);
-	icosahedronMesh->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());*/
-
+	//The sphere needs to be displaced and tessellated
 	worldMatrix = renderer->getWorldMatrix();
 	icosahedronMesh->sendData(renderer->getDeviceContext());
-	displacementShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, plasmaColours, plasmaInvert, displacement, tessFactor);
-	displacementShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
+	displacementTessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("plasmaHM"), timer->getTime()*plasmaFlowRate, plasmaColours, plasmaInvert, displacement, tessFactor);
+	displacementTessShader->render(renderer->getDeviceContext(), icosahedronMesh->getIndexCount());
 
 	worldMatrix = renderer->getWorldMatrix();
 	// Send geometry data, set shader parameters, render object with shader
 	
 	if (renderBox)
 	{
+		//Lit/shaded
 		worldMatrix = XMMatrixMultiply(XMMatrixTranslation(2, -3, 6), XMMatrixScaling(0.5f, 0.5f, 0.5f));
 		worldMatrix = XMMatrixMultiply(worldMatrix, XMMatrixRotationRollPitchYaw(0, 150, 0));
 		cubeMesh->sendData(renderer->getDeviceContext());
-		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("box"), depthMaps, lights);
+		shadowShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textureMgr->getTexture("box"), shadowMapTexture[0]->getShaderResourceView(), shadowMapTexture[1]->getShaderResourceView(), lights);
 		shadowShader->render(renderer->getDeviceContext(), cubeMesh->getIndexCount());
 	}
 
+	//Hide the black and high alpha values of our particle
 	renderer->setAlphaBlending(true);
 
+	//Loop through for the amount of particles set in ImGui
 	for (int i = 0; i < amountOfParticles; i++)
 	{
 		XMFLOAT3 particlePositon = particleMesh[i]->updatePosition(timer->getTime(), particleDirectionalSpeed);
@@ -347,34 +311,72 @@ void App1::RenderScene()
 	}
 	renderer->setAlphaBlending(false);
 
-
-	/*TessellationSphere->sendData(renderer->getDeviceContext());
-	tessShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, tessFactor, camera->getPosition());
-	tessShader->render(renderer->getDeviceContext(), TessellationSphere->getIndexCount());*/
-
 	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	renderer->setBackBufferRenderTarget();
 }
 
-void App1::MotionBlurShaderPass()
+void App1::HorizontalBlurPass()
 {
 	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
 
-	float screenSizeY = (float)motionBlurTexture->getTextureHeight();
-	motionBlurTexture->setRenderTarget(renderer->getDeviceContext());
-	motionBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
+	float screenSizeX = (float)horizontalBlurTexture->getTextureWidth();
+	horizontalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	horizontalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
 
 	worldMatrix = renderer->getWorldMatrix();
 	baseViewMatrix = camera->getOrthoViewMatrix();
-	// Get the ortho matrix from the render to texture since texture has different dimensions being that it is smaller.
-	orthoMatrix = motionBlurTexture->getOrthoMatrix();
+	// Get the ortho matrix from the render to texture since texture has different dimensions
+	orthoMatrix = horizontalBlurTexture->getOrthoMatrix();
 
 	// Render for Vertical Blur
 	renderer->setZBuffer(false);
-	motionBlurMesh->sendData(renderer->getDeviceContext());
-	motionBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, sceneTexture->getShaderResourceView(), depthSceneTexture->getShaderResourceView(),
-		numberOfBlurSamples, camera->getRotation());
-	motionBlurShader->render(renderer->getDeviceContext(), motionBlurMesh->getIndexCount());
+	depthOfFieldMesh->sendData(renderer->getDeviceContext());
+	horizontalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, sceneTexture->getShaderResourceView(), screenSizeX);
+	horizontalBlurShader->render(renderer->getDeviceContext(), depthOfFieldMesh->getIndexCount());
+	renderer->setZBuffer(true);
+}
+
+void App1::VerticalBlurPass()
+{
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	float screenSizeY = (float)verticalBlurTexture->getTextureHeight();
+	verticalBlurTexture->setRenderTarget(renderer->getDeviceContext());
+	verticalBlurTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
+
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	// Get the ortho matrix from the render to texture since texture has different dimensions
+	orthoMatrix = verticalBlurTexture->getOrthoMatrix();
+
+	// Render for Vertical Blur
+	renderer->setZBuffer(false);
+	depthOfFieldMesh->sendData(renderer->getDeviceContext());
+	//Use the render texture from the previous horizontal blur pass
+	verticalBlurShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, horizontalBlurTexture->getShaderResourceView(), screenSizeY);
+	verticalBlurShader->render(renderer->getDeviceContext(), depthOfFieldMesh->getIndexCount());
+	renderer->setZBuffer(true);
+}
+
+void App1::DepthOfFieldShaderPass()
+{
+	XMMATRIX worldMatrix, baseViewMatrix, orthoMatrix;
+
+	
+	depthOfFieldTexture->setRenderTarget(renderer->getDeviceContext());
+	depthOfFieldTexture->clearRenderTarget(renderer->getDeviceContext(), 0.02f, 0.02f, 0.02f, 1.0f);
+
+	worldMatrix = renderer->getWorldMatrix();
+	baseViewMatrix = camera->getOrthoViewMatrix();
+	// Get the ortho matrix from the render to texture since texture has different dimensions
+	orthoMatrix = depthOfFieldTexture->getOrthoMatrix();
+
+	// Render for Vertical Blur
+	renderer->setZBuffer(false);
+	depthOfFieldMesh->sendData(renderer->getDeviceContext());
+	//Pass in all the relevant render textures so we can blend between them
+	depthOfFieldShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, baseViewMatrix, orthoMatrix, sceneTexture->getShaderResourceView(), verticalBlurTexture->getShaderResourceView());
+	depthOfFieldShader->render(renderer->getDeviceContext(), depthOfFieldMesh->getIndexCount());
 	renderer->setZBuffer(true);
 }
 
@@ -383,16 +385,19 @@ void App1::FinalPass()
 	renderer->setBackBufferRenderTarget();
 	renderer->beginScene(0.02f, 0.02f, 0.02f, 1.0f);
 
-	// RENDER THE RENDER TEXTURE SCENE
 	// Requires 2D rendering and an ortho mesh.
 	renderer->setZBuffer(false);
 	XMMATRIX worldMatrix = renderer->getWorldMatrix();
-	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  // ortho matrix for 2D rendering
-	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();	// Default camera position for orthographic rendering
+	// ortho matrix for 2D rendering
+	XMMATRIX orthoMatrix = renderer->getOrthoMatrix();  
 
-	motionBlurMesh->sendData(renderer->getDeviceContext());
-	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, motionBlurTexture->getShaderResourceView());
-	textureShader->render(renderer->getDeviceContext(), motionBlurMesh->getIndexCount());
+	// Default camera position for orthographic rendering
+	XMMATRIX orthoViewMatrix = camera->getOrthoViewMatrix();
+
+	//display the blurred and blended image
+	depthOfFieldMesh->sendData(renderer->getDeviceContext());
+	textureShader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, orthoViewMatrix, orthoMatrix, depthOfFieldTexture->getShaderResourceView());
+	textureShader->render(renderer->getDeviceContext(), depthOfFieldMesh->getIndexCount());
 	renderer->setZBuffer(true);
 
 	// Render GUI
@@ -417,19 +422,19 @@ void App1::gui()
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 	//Variables
-	ImGui::SliderFloat("particle directional speed", &particleDirectionalSpeed, -1, 1);
+	//Plasma settings
 	ImGui::SliderFloat("plasma flow rate", &plasmaFlowRate, -1, 1);
 	ImGui::Checkbox("Invert plasma colours: ", &plasmaInvert);
-	ImGui::Checkbox("Render box: ", &renderBox);
-	ImGui::SliderInt("Amount of particles", &amountOfParticles, 0, MAX_PARTICLES);
-	ImGui::SliderInt("Blur samples", &numberOfBlurSamples, 1, 3);
 	ImGui::ColorPicker3("plasma colour", plasmaColours);
-	ImGui::SliderFloat3("Plasma light position", lightPosition, -20, 20);
-	ImGui::SliderFloat3("Directional light direction", lightDirections, -2, 2);
 	ImGui::SliderFloat("Sphere displacement", &displacement, -1, 1);
-	ImGui::SliderInt("Sphere tessellation", &tessFactor, 0, 64);
+	ImGui::SliderInt("Sphere tessellation", &tessFactor, 1, 64);
 
-
+	//Model settings
+	ImGui::Checkbox("Render box: ", &renderBox);
+	//Particle settings
+	ImGui::SliderFloat("particle directional speed", &particleDirectionalSpeed, -1, 1);
+	ImGui::SliderInt("Amount of particles", &amountOfParticles, 0, MAX_PARTICLES);
+	
 	// Render UI
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
 	ImGui::Render();

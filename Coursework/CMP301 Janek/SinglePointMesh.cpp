@@ -15,25 +15,29 @@ SinglePointMesh::~SinglePointMesh()
 }
 void SinglePointMesh::setPosition(XMINT3 setPos)
 {
+	//Stores where this particle should start, then randomises it slightly
 	startPos = setPos;
 	position = XMFLOAT3((rand() % startPos.x) - startPos.x/2, (rand() % startPos.y) - startPos.y, (rand() % startPos.z) - startPos.z/2);
 }
 
 void SinglePointMesh::setSpeed(XMINT3 setSpeed)
 {
+	//Stores start speed, randomises it
 	startSpeed = setSpeed;
 	speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);
 }
 
 XMFLOAT3 SinglePointMesh::updatePosition(float deltaTime, float directionalSpeed)
 {
-
+	//Increase the world position
 	position.x += deltaTime*speed.x*directionalSpeed;
 	position.y += deltaTime*speed.y*directionalSpeed;
 	position.z += deltaTime*speed.z*directionalSpeed;
 
+	//If the particle has gone too far
 	if (abs(startPos.y - position.y) >= 20)
 	{
+		//Set it back and give it a new random location and speed
 		position = XMFLOAT3((rand() % startPos.x) - startPos.x / 2, (rand() % startPos.y) - startPos.y, (rand() % startPos.z) - startPos.z / 2);
 		speed = XMINT3((rand() % startSpeed.x) - startSpeed.x / 2, (rand() % startSpeed.y) + startSpeed.y, (rand() % startSpeed.z) - startSpeed.z / 2);
 	}

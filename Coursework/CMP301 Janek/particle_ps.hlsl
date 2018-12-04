@@ -24,8 +24,10 @@ struct InputType
 float4 main(InputType input) : SV_TARGET
 {
     float4 textureColour = texture0.Sample(Sampler0, input.tex);
+    //Convert the sprite to greyscale so we can colour it how we want
 	float grey = (textureColour.x + textureColour.y + textureColour.z) / 3;
     float4 finalColour = float4(grey, grey, grey, textureColour.w);
+    //Don't colour the  texture if it's past a certain alpha
 	if (finalColour.w < 0.5f)
 	{
 		finalColour = float4(0,0,0,0);

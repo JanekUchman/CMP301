@@ -11,7 +11,7 @@ void DXUtility::CreateBufferDesc(std::size_t size, ID3D11Buffer** buffer, ID3D11
 	bufferDesc.StructureByteStride = 0;
 	renderer->CreateBuffer(&bufferDesc, NULL, buffer);
 }
-
+//Don't use this unless they definitely match the sampler descs already set up
 void DXUtility::CreateSamplerDesc(ID3D11SamplerState** sampler, ID3D11Device* renderer)
 {
 	D3D11_SAMPLER_DESC samplerDesc;
@@ -26,6 +26,7 @@ void DXUtility::CreateSamplerDesc(ID3D11SamplerState** sampler, ID3D11Device* re
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	renderer->CreateSamplerState(&samplerDesc, sampler);
 }
+//Don't use this unless they definitely match the sampler descs already set up
 
 void DXUtility::CreateTextureSamplerDesc(ID3D11SamplerState** sampler, ID3D11Device* renderer)
 {

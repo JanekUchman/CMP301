@@ -5,13 +5,13 @@
 
 using namespace std;
 using namespace DirectX;
-
-class DisplacementShader : public BaseShader
+//Handles the lava sphere displacement and tessellation shaders
+class DisplacementTessellationShader : public BaseShader
 {
 	
 public:
-	DisplacementShader(ID3D11Device* device, HWND hwnd);
-	~DisplacementShader();
+	DisplacementTessellationShader(ID3D11Device* device, HWND hwnd);
+	~DisplacementTessellationShader();
 
 	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &worldMatrix, const XMMATRIX &viewMatrix, const XMMATRIX &projectionMatrix,
 		ID3D11ShaderResourceView* displacementMap, float speed, float lavaColours[3], bool lavaInvert, float displacement, int tessFactor);
@@ -20,6 +20,7 @@ private:
 	void initShader(WCHAR*, WCHAR*);
 	void initShader(WCHAR*, WCHAR*, WCHAR*, WCHAR*);
 	
+
 	struct ColourBufferType
 	{
 		float red;
@@ -27,7 +28,7 @@ private:
 		float green;
 		float invert;
 	};
-
+	//For calculating the displacement texture's position
 	struct TimeBufferType
 	{
 		float time;
@@ -42,7 +43,7 @@ private:
 	};
 
 
-	Timer timer;
+
 	float time = 0;
 	ID3D11Buffer * matrixBuffer;
 	ID3D11SamplerState* sampleState;

@@ -27,7 +27,6 @@ OutputType main(InputType input)
     output.tex = input.tex;
 	 // Pass the vertex position into the hull shader.
     output.position = input.position;
-	//output.depthPosition.xyz = input.position;
     output.normal = input.normal;
     
     return output;

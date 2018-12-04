@@ -5,6 +5,7 @@
 
 DepthShaderSphere::DepthShaderSphere(ID3D11Device* device, HWND hwnd) : BaseShader(device, hwnd)
 {
+	//Load displacement to calculate the warped shadows
 	initShader(L"displacement_vs.cso", L"depth_ps.cso");
 }
 

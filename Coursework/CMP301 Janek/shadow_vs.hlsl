@@ -4,10 +4,16 @@ cbuffer MatrixBuffer : register(b0)
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
-	matrix lightViewMatrix1;
-	matrix lightViewMatrix2;
-	matrix lightProjectionMatrix1;
-	matrix lightProjectionMatrix2;
+	
+};
+
+cbuffer ShadowBuffer: register(b1)
+{
+    
+    matrix lightViewMatrix1;
+    matrix lightProjectionMatrix1;
+    matrix lightViewMatrix2;
+    matrix lightProjectionMatrix2;
 };
 
 struct InputType
@@ -20,10 +26,10 @@ struct InputType
 struct OutputType
 {
     float4 position : SV_POSITION;
-    float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
-    float4 lightViewPos1 : TEXCOORD1;
-	float4 lightViewPos2 : TEXCOORD2;
+	float2 tex : TEXCOORD0;
+    float4 lightViewPosOne : TEXCOORD1;
+	float4 lightViewPosTwo : TEXCOORD2;
 
     float3 worldPos : TEXCOORD3;
 };
@@ -33,20 +39,25 @@ OutputType main(InputType input)
 {
     OutputType output;
 
+    
+
 	// Calculate the position of the vertex against the world, view, and projection matrices.
     output.position = mul(input.position, worldMatrix);
     output.position = mul(output.position, viewMatrix);
     output.position = mul(output.position, projectionMatrix);
     
-	// Calculate the position of the vertice as viewed by the light source.
-    output.lightViewPos1 = mul(input.position, worldMatrix);
-    output.lightViewPos1 = mul(output.lightViewPos1, lightViewMatrix1);
-    output.lightViewPos1 = mul(output.lightViewPos1, lightProjectionMatrix1);
 
-    // Calculate the position of the vertice as viewed by the light source.
-    output.lightViewPos2 = mul(input.position, worldMatrix);
-    output.lightViewPos2 = mul(output.lightViewPos2, lightViewMatrix2);
-    output.lightViewPos2 = mul(output.lightViewPos2, lightProjectionMatrix2);
+	// Calculate the position of the vertice as viewed by the light source.
+	output.lightViewPosOne = mul(input.position, worldMatrix);
+    output.lightViewPosOne = mul(output.lightViewPosOne, lightViewMatrix1);
+    output.lightViewPosOne = mul(output.lightViewPosOne, lightProjectionMatrix1);
+
+	// Calculate the position of the vertice as viewed by the light source.
+    //TODO something  is going wrong here, but the matrices all get passed in correctly
+    output.lightViewPosTwo = mul(input.position, worldMatrix);
+    output.lightViewPosTwo = mul(output.lightViewPosTwo, lightViewMatrix2);
+    output.lightViewPosTwo = mul(output.lightViewPosTwo, lightProjectionMatrix2);
+
 
     output.worldPos = mul(input.position, worldMatrix).xyz;
 

@@ -18,13 +18,16 @@ public:
 	ShadowShader(ID3D11Device* device, HWND hwnd);
 	~ShadowShader();
 
-	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap[2], Light* lights[3]);
+	void setShaderParameters(ID3D11DeviceContext* deviceContext, const XMMATRIX &world, const XMMATRIX &view, const XMMATRIX &projection,
+		ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMap1, ID3D11ShaderResourceView* depthMap2, Light* lights[3]);
 
 private:
 	void initShader(WCHAR*, WCHAR*);
 
 private:
 	ID3D11Buffer* matrixBuffer;
+	ID3D11Buffer* shadowBuffer;
+
 	ID3D11SamplerState* sampleState;
 	ID3D11SamplerState* sampleStateShadow;
 	ID3D11Buffer* lightBuffer;

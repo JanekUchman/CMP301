@@ -40,29 +40,6 @@ void SetPoint(point InputType input[1], inout TriangleStream<OutputType> triStre
 	triStream.Append(output);
 }
 
-float3 GetLine(float3 pointOne, float3 pointTwo)
-{
-	float3 lineVector = float3(0, 0, 0);
-	float3 a = pointOne.x - pointTwo.x;
-	float3 b = pointOne.y - pointTwo.y;
-	a = a * a;
-	b = b * b;
-	lineVector = sqrt(a + b);
-}
-
-float3 CalculateNormal(float3 lineOne, float3 lineTwo, float3 lineThree)
-{
-	float3 U = (lineTwo - lineOne);
-	float3 V = (lineThree - lineOne);
-
-	float3 normal = float3(0, 0, 0);
-	normal.x = (U.y*V.z) - (U.z * V.y);
-	normal.y = (U.z*V.x) - (U.x * V.z);
-	normal.z = (U.x*V.y) - (U.y * V.x);
-
-	return normal;
-}
-
 [maxvertexcount(4)]
 void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 {
@@ -76,21 +53,17 @@ void main(point InputType input[1], inout TriangleStream<OutputType> triStream)
 		float2(1, 1)
 	};
 
+    //The forward vector of the particle
     float3 planeNormal = input[0].position - cameraPos;
-
     planeNormal = normalize(planeNormal);
 
-    //float temp = sqrt(planeNormal.x * planeNormal.x + planeNormal.y * planeNormal.y + planeNormal.z * planeNormal.z);
-    //float3 temp2 = (planeNormal.x / temp, planeNormal.y / temp, planeNormal.z / temp);
-    //float3 upVector = normalize(temp2);
-
+    //Set it straight up so we get x/z rotation
     float3 upVector = float3(0.0f, 1.0f, 0.0f);
-
     float3 rightVector = normalize(cross(planeNormal, upVector));
 
     rightVector = rightVector * 0.5f;
+    //Set it back so the sprite renders properly
     upVector = float3(0, -1.f, 0);
-
 
     float3 positions[4] =
     {
